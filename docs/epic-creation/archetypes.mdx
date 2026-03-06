@@ -1,0 +1,335 @@
+---
+title: "Epic archetypes"
+sidebarTitle: "Archetypes"
+description: "Three patterns for structuring epics: Workflow (reusable process), Instance (one-off project), and Capability (agent extension)."
+---
+
+Epics fall into three broad archetypes. Each has a different relationship between the workflow definition and the instance state. Choosing the right archetype helps you structure your epic for its intended use.
+
+## Workflow epic
+
+A workflow epic defines a **reusable process**. The workflow definition (`EPIC.md`, `SKILL.md`) stays stable across runs while instance state (`plans/`, `state.json`, `log/`) changes each time.
+
+Use this pattern when the same process will be repeated for different projects, products, or campaigns.
+
+### Example: saas-launch
+
+A product launch checklist that can be instantiated for each new SaaS product.
+
+```directory
+saas-launch/
+├── SKILL.md
+├── EPIC.md
+├── ROADMAP.md
+├── plans/
+│   ├── 001-architecture.md
+│   └── 002-billing-integration.md
+├── state.json
+├── log/
+│   ├── 2026-03-01T09-00-00Z-agent-started.md
+│   ├── 2026-03-02T14-30-00Z-agent-database-decision.md
+│   └── 2026-03-03T11-00-00Z-agent-schema-setup.md
+├── DECISIONS.md
+├── scripts/
+│   └── fetch_metrics.py
+└── references/
+    └── launch-checklist.md
+```
+
+**SKILL.md** -- generic routing that works for any product launch:
+
+```yaml
+---
+name: saas-launch
+description: >
+  Workflow for launching a SaaS product. Covers architecture decisions,
+  implementation, deployment, and first-customer onboarding. Activate
+  this epic when planning or executing a product launch.
+---
+```
+
+**EPIC.md** -- reusable workflow definition:
+
+```mdx
+---
+spec_version: 0.5.0
+id: saas-launch
+tags: [saas, launch, product]
+timezone: UTC
+---
+
+# SaaS Launch Workflow
+
+## Purpose
+Take a product from architecture to first paying customer.
+
+## Phases
+1. Architecture decisions
+2. Core implementation
+3. Beta program
+4. First customer onboarding
+
+## Success Criteria
+- 10 beta customers within 30 days of launch
+- <5% churn during beta period
+
+## Resume
+Read current plan and state.json. Check recent logs for last session context.
+```
+
+**state.json** -- instance-specific state that changes each run:
+
+```json
+{
+  "state_version": 1,
+  "status": "active",
+  "current_plan": "002-billing-integration.md",
+  "milestone": "M2",
+  "progress": 0.4,
+  "blocked": false,
+  "target_customers": 10
+}
+```
+
+To start a new run of the workflow, reset the working state (`state.json`, `plans/`, `log/`) while keeping the workflow definition intact.
+
+## Instance epic
+
+An instance epic is a **one-off effort** with unique scope. The `EPIC.md` body describes the specific project rather than a generic reusable workflow.
+
+Use this pattern for campaigns, sprints, or projects that won't be repeated in the same form.
+
+### Example: q1-marketing-campaign
+
+A specific marketing campaign with defined deliverables and timeline.
+
+```directory
+q1-marketing-campaign/
+├── SKILL.md
+├── EPIC.md
+├── ROADMAP.md
+├── plans/
+│   └── 001-content-creation.md
+├── state.json
+├── log/
+│   └── 2026-01-15T09-00-00Z-agent-kickoff.md
+├── DECISIONS.md
+└── artifacts/
+    ├── blog-posts/
+    ├── social-media/
+    └── email-sequences/
+```
+
+**SKILL.md** -- routing specific to this campaign:
+
+```yaml
+---
+name: q1-marketing-campaign
+description: >
+  Q1 2026 marketing campaign for product awareness and lead generation.
+  Covers content creation, social media, email sequences, and analytics.
+  Activate when working on Q1 marketing deliverables or reviewing campaign metrics.
+---
+```
+
+**EPIC.md** -- project-specific context (not a reusable template):
+
+```mdx
+---
+spec_version: 0.5.0
+id: q1-marketing-campaign
+tags: [marketing, q1-2026, campaign]
+timezone: America/New_York
+---
+
+# Q1 2026 Marketing Campaign
+
+## Context
+Launch campaign runs January 15 through March 31, 2026. Target audience is
+technical decision-makers at mid-market companies (100-500 employees).
+
+## Deliverables
+- 8 blog posts (2 per month, plus launch and wrap-up)
+- 30 social media posts across LinkedIn and Twitter
+- 3 email sequences (awareness, consideration, conversion)
+- Weekly analytics reports
+
+## Budget
+- Content creation: $5,000
+- Paid social: $3,000
+- Email tooling: $500/month
+
+## Key Dates
+- Jan 15: Campaign kickoff
+- Feb 1: First email sequence live
+- Mar 15: Mid-campaign review
+- Mar 31: Campaign wrap-up and retrospective
+
+## Resume
+Check the current plan for active deliverables. Review artifacts/ for
+completed work. Check state.json for budget tracking and deadline status.
+```
+
+**state.json** -- tracks campaign-specific metrics:
+
+```json
+{
+  "state_version": 1,
+  "status": "active",
+  "current_plan": "001-content-creation.md",
+  "blog_posts_published": 3,
+  "blog_posts_target": 8,
+  "social_posts_published": 12,
+  "social_posts_target": 30,
+  "email_sequences_live": 1,
+  "budget_spent": 3200,
+  "budget_total": 8500
+}
+```
+
+Instance epics often produce more artifacts than workflow epics. The `artifacts/` directory is where deliverables accumulate.
+
+## Capability epic
+
+A capability epic extends the **agent itself** with a long-lived capability, integration, or tool surface. The agent works with the epic as an installed feature rather than a project to complete.
+
+Use this pattern for memory systems, integrations, monitoring, or any persistent agent capability.
+
+### Example: memory-system
+
+A persistent memory system that the agent uses across all conversations.
+
+```directory
+memory-system/
+├── SKILL.md
+├── EPIC.md
+├── plans/
+│   └── 001-maintenance.md
+├── state/
+│   ├── core.json
+│   └── memory-index.json
+├── log/
+│   └── 2026-02-01T09-00-00Z-agent-installed.md
+├── hooks/
+│   └── install.md
+├── policy.yml
+├── scripts/
+│   ├── search_memories.py
+│   └── compact_memories.py
+├── cron.d/
+│   └── weekly-compaction.yml
+└── artifacts/
+    └── memories/
+```
+
+**SKILL.md** -- routing that activates the capability when relevant:
+
+```yaml
+---
+name: memory-system
+description: >
+  Persistent memory for the agent. Stores, retrieves, and manages
+  long-term memories across conversations. Activate when the user
+  asks to remember something, recall previous context, or manage
+  stored knowledge.
+---
+```
+
+**EPIC.md** -- defines the capability rather than a project:
+
+```mdx
+---
+spec_version: 0.5.0
+id: memory-system
+tags: [memory, agent-capability, persistence]
+timezone: UTC
+---
+
+# Memory System
+
+## Purpose
+Provide the agent with persistent, searchable memory across conversations.
+Memories are stored as individual files in artifacts/memories/ and indexed
+in state/memory-index.json.
+
+## Operations
+- **Store**: Save a new memory with tags and context
+- **Recall**: Search memories by keyword, tag, or semantic similarity
+- **Forget**: Mark a memory as archived (never delete, for audit trail)
+- **Compact**: Merge related memories to reduce redundancy
+
+## Constraints
+- Never store secrets, tokens, or credentials
+- Always tag memories with source conversation date
+- Run weekly compaction to keep the index manageable
+
+## Resume
+Check state/core.json for system health. Review the maintenance plan
+for any pending compaction or cleanup tasks.
+```
+
+**state/core.json** -- tracks capability health:
+
+```json
+{
+  "state_version": 1,
+  "status": "active",
+  "current_plan": "001-maintenance.md",
+  "total_memories": 142,
+  "last_compaction": "2026-03-01T00:00:00Z",
+  "index_size_kb": 48
+}
+```
+
+**policy.yml** -- constrains what the memory system can do autonomously:
+
+```yaml
+autonomy:
+  allowed_tools:
+    - bash
+    - file_create
+  forbidden_actions:
+    - delete memory files
+    - access external APIs
+    - modify other epics
+
+escalation:
+  on_error: log_and_continue
+  on_ambiguity: ask_human
+```
+
+**cron.d/weekly-compaction.yml** -- automated maintenance:
+
+```yaml
+name: weekly-compaction
+schedule: "0 3 * * 0"
+timezone: UTC
+enabled: true
+run:
+  type: both
+  prompt: |
+    Run memory compaction. Merge related memories, update the index,
+    and log the results. Archive memories older than 90 days.
+  script: scripts/compact_memories.py
+context:
+  - state/memory-index.json
+output:
+  log: true
+  update_state: true
+```
+
+Capability epics tend to be long-lived and rarely reach `complete` status. They are maintained rather than finished, with `plans/` focusing on maintenance tasks and improvements rather than project milestones.
+
+## Choosing an archetype
+
+| Question | Workflow | Instance | Capability |
+|----------|----------|----------|------------|
+| Will it be reused? | Yes, for different projects | No, it's a one-off | Yes, it's always active |
+| Does it finish? | Yes, each run completes | Yes, when deliverables are done | Rarely -- it's maintained |
+| What does `EPIC.md` describe? | A reusable process | A specific project | A capability definition |
+| Where do outputs go? | Varies by run | `artifacts/` | `artifacts/` or integrated |
+| Typical extras | `ROADMAP.md`, `DECISIONS.md` | `artifacts/`, `DECISIONS.md` | `hooks/`, `cron.d/`, `policy.yml` |
+
+These archetypes are patterns, not rigid categories. Many epics blend elements of more than one. Use whichever structure best fits your workflow.
+
+See the [full specification](/epic-specification) for details on every file and field, or [get started](/epic-creation/getting-started) building your first epic.

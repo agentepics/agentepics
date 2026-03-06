@@ -7,3 +7,7 @@
 
 # Dependencies
 node_modules/
+
+# Generated proposal outputs
+reference/mcp/Proposals-*.md
+reference/skills/Proposals-*.md

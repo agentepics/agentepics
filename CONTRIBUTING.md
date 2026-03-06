@@ -1,31 +1,31 @@
-# Contributing to Agent Skills
+# Contributing to Agent Epics
 
-Thank you for your interest in contributing to Agent Skills! This document explains how to contribute and where different types of feedback belong.
+Thank you for your interest in contributing to Agent Epics! This document explains how to contribute and where different types of feedback belong.
 
 ## Types of Contributions
 
 ### Documentation Improvements
 
-We welcome improvements to the [documentation site](https://agentskills.io) — typo fixes, clarity improvements, better examples, and new guides. Documentation lives in the `docs/` directory.
+We welcome improvements to the [documentation site](https://agentepics.io) — typo fixes, clarity improvements, better examples, and new guides. Documentation lives in the `docs/` directory.
 
 ### Bug Reports
 
-Found a bug in the spec, documentation, or reference library? [Open an issue](https://github.com/agentskills/agentskills/issues).
+Found a bug in the spec, documentation, or reference library? [Open an issue](https://github.com/agentepics/agentepics/issues).
 
 ### Proposals, Questions, and Feedback
 
-Have a feature request, spec design question, or general feedback? [Start a discussion](https://github.com/agentskills/agentskills/discussions). We use Discussions for proposals and open-ended conversation, and reserve Issues for concrete bugs and problems.
+Have a feature request, spec design question, or general feedback? [Start a discussion](https://github.com/agentepics/agentepics/discussions). We use Discussions for proposals and open-ended conversation, and reserve Issues for concrete bugs and problems.
 
 Proposals should address real implementation challenges you've encountered, not theoretical concerns. Show us the problem you faced and how your proposal addresses it.
 
 We maintain a high bar for additions to the spec — it is much easier to add things to a specification than to remove them. Every new feature adds complexity that all implementers must understand and support. When in doubt, leave it out.
 
 > [!NOTE]
-> **Not sure where to post?** Default to [Discussions](https://github.com/agentskills/agentskills/discussions). If it turns out to be a bug, we'll convert it to an issue.
+> **Not sure where to post?** Default to [Discussions](https://github.com/agentepics/agentepics/discussions). If it turns out to be a bug, we'll convert it to an issue.
 
 ### Ecosystem Listings & Logo Requests
 
-If your product or platform has implemented Agent Skills compatibility, you can request to be listed on [agentskills.io](https://agentskills.io). Your product must be publicly available and able to discover and execute skills today — we do not list products that have only announced intent to support Skills or are still in private beta.
+If your product or platform has implemented Agent Skills compatibility, you can request to be listed on [agentepics.io](https://agentepics.io). Your product must be publicly available and able to discover and execute skills today — we do not list products that have only announced intent to support Skills or are still in private beta.
 
 Submit a pull request with:
 
@@ -37,7 +37,7 @@ We may ask for a demo or screenshot to verify the implementation. Logo requests 
 
 ### Reference Library (`skills-ref/`)
 
-We're still determining the direction for the reference library and are not accepting code contributions to it at this time. Bug reports and feedback are still welcome via [Issues](https://github.com/agentskills/agentskills/issues) and [Discussions](https://github.com/agentskills/agentskills/discussions), respectively.
+We're still determining the direction for the reference library and are not accepting code contributions to it at this time. Bug reports and feedback are still welcome via [Issues](https://github.com/agentepics/agentepics/issues) and [Discussions](https://github.com/agentepics/agentepics/discussions), respectively.
 
 ### What We're Not Accepting (Yet)
 
@@ -46,7 +46,7 @@ To keep the project focused during this early stage, we are currently not accept
 - **Skill submissions** — We don't maintain a directory of community skills. This may change in the future.
 - **Major architectural changes** — We're still iterating on the core specification. Large-scale redesigns are premature.
 
-If you're unsure whether your contribution fits, open a [Discussion](https://github.com/agentskills/agentskills/discussions) before investing significant effort.
+If you're unsure whether your contribution fits, open a [Discussion](https://github.com/agentepics/agentepics/discussions) before investing significant effort.
 
 ## Development Setup
 
@@ -76,11 +76,11 @@ Keep PRs focused on one logical change and link any related issues.
 ## AI Contributions
 
 > [!IMPORTANT]
-> If you are using **any kind of AI assistance** to contribute to Agent Skills, it must be disclosed in the pull request or issue.
+> If you are using **any kind of AI assistance** to contribute to Agent Epics, it must be disclosed in the pull request or issue.
 
-We welcome and encourage the use of AI tools to help improve Agent Skills. Many valuable contributions have been enhanced with AI assistance for code generation, issue detection, and documentation.
+We welcome and encourage the use of AI tools to help improve Agent Epics. Many valuable contributions have been enhanced with AI assistance for code generation, issue detection, and documentation.
 
-That being said, if you are using any kind of AI assistance (e.g., agents such as Claude Code, ChatGPT) while contributing to Agent Skills, **this must be disclosed in the pull request or issue**, along with the extent to which AI assistance was used (e.g., documentation comments vs. code generation).
+That being said, if you are using any kind of AI assistance (e.g., agents such as Claude Code, ChatGPT) while contributing to Agent Epics, **this must be disclosed in the pull request or issue**, along with the extent to which AI assistance was used (e.g., documentation comments vs. code generation).
 
 If your PR responses or comments are being generated by an AI, disclose that as well.
 
@@ -102,7 +102,7 @@ When submitting AI-assisted contributions, please ensure they include:
 
 - **Clear disclosure of AI use** — Be transparent about AI use and the degree to which you used it
 - **Human understanding** — You personally understand what the changes do
-- **Clear rationale** — You can explain why the change is needed and how it fits within Agent Skills goals
+- **Clear rationale** — You can explain why the change is needed and how it fits within Agent Epics goals
 - **Concrete evidence** — Include test cases, scenarios, or examples that demonstrate the improvement
 
 ### What we'll close

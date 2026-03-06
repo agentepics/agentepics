@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Agent Skills",
+  "name": "Agent Epics",
   "colors": {
     "primary": "#7f7f7f",
     "light": "#bfbfbf",
@@ -11,25 +11,44 @@
   "navbar": {
     "primary": {
       "type": "github",
-      "href": "https://github.com/agentskills/agentskills"
+      "href": "https://github.com/agentepics/agentepics"
     }
   },
   "navigation": {
     "pages": [
       "home",
-      "what-are-skills",
-      "specification",
       {
-        "group": "For skill creators",
+        "group": "Skills",
         "pages": [
-          "skill-creation/evaluating-skills",
-          "skill-creation/using-scripts"
+          "what-are-skills",
+          "specification",
+          {
+            "group": "For skill creators",
+            "pages": [
+              "skill-creation/evaluating-skills",
+              "skill-creation/using-scripts"
+            ]
+          },
+          {
+            "group": "For client implementors",
+            "pages": [
+              "client-implementation/adding-skills-support"
+            ]
+          }
         ]
       },
       {
-        "group": "For client implementors",
+        "group": "Epics",
         "pages": [
-          "client-implementation/adding-skills-support"
+          "what-are-epics",
+          "epic-specification",
+          {
+            "group": "For epic creators",
+            "pages": [
+              "epic-creation/getting-started",
+              "epic-creation/archetypes"
+            ]
+          }
         ]
       }
     ]

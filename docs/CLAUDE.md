@@ -1,10 +1,10 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository. The project defines an open format for teaching AI agents specialized workflows through SKILL.md files.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository. The project defines an open format for teaching AI agents specialized workflows through SKILL.md and EPIC.md files.
 
 ## Documentation
 
-The Agent Skills documentation site, defined in the `docs/` directory, is built with [Mintlify](https://mintlify.com).
+The Agent Epics documentation site, defined in the `docs/` directory, is built with [Mintlify](https://mintlify.com).
 
 ### Quick Start Commands
 

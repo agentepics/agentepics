@@ -1,0 +1,1 @@
+Using a deep research methodology, write a report on the strengths and weaknesses of the Model Context Protocol (MCP) standard for AI Agents. Base the report on criticism and praise from critical thinkers around the web. Avoid as much as possible opinions based on heard mentality, instead documenting facts and opinions based in personal experience and expertise.

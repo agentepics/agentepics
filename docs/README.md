@@ -1,6 +1,6 @@
-# Agent Skills Documentation
+# Agent Epics Documentation
 
-This directory contains the source code for the Agent Skills [documentation site](https://agentskills.io/), which is built using [Mintlify](https://mintlify.com).
+This directory contains the source code for the Agent Epics [documentation site](https://agentepics.io/), which is built using [Mintlify](https://mintlify.com).
 
 ## Development
 

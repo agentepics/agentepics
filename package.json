@@ -1,5 +1,5 @@
 {
-  "name": "agentskills",
+  "name": "agentepics",
   "private": true,
   "scripts": {
     "dev": "cd docs && npx mint dev"

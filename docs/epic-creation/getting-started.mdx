@@ -1,0 +1,233 @@
+---
+title: "Getting started with epics"
+sidebarTitle: "Getting started"
+description: "A step-by-step guide to creating your first Agent Epic, from a minimal two-file setup to a fully functional stateful workflow."
+---
+
+This guide walks you through creating an epic incrementally. Each step adds a new layer of capability.
+
+## Step 1: Create the SKILL.md
+
+Every epic starts as a skill. Create a directory and add a `SKILL.md` with routing metadata and instructions:
+
+```directory
+saas-launch/
+└── SKILL.md
+```
+
+```mdx
+---
+name: saas-launch
+description: >
+  Workflow for launching a SaaS product. Covers architecture decisions,
+  implementation, deployment, and first-customer onboarding. Activate
+  this epic when planning or executing a product launch.
+---
+
+# SaaS Launch
+
+## When to activate
+Use this epic when planning or executing a new product launch.
+
+## How to operate
+1. Read EPIC.md for workflow context and phases.
+2. Follow the resumption sequence: load state, current plan, and recent logs.
+3. Work through the current plan's ## Now section.
+4. Log what you did. Update state and plan before ending the session.
+```
+
+The `name` field must be lowercase alphanumeric with hyphens, max 64 characters, and must match the directory name. The `description` should be specific enough for an agent to know when to activate it.
+
+## Step 2: Add the EPIC.md
+
+This is what turns a skill into an epic. Create `EPIC.md` with identity frontmatter and a workflow definition:
+
+```directory
+saas-launch/
+├── SKILL.md
+└── EPIC.md
+```
+
+```mdx
+---
+spec_version: 0.5.0
+id: saas-launch
+tags: [saas, launch, product]
+timezone: UTC
+---
+
+# SaaS Launch
+
+## Purpose
+Take a product from architecture to first paying customer.
+
+## Phases
+1. Architecture decisions
+2. Core implementation
+3. Beta program
+4. First customer onboarding
+
+## Success Criteria
+- 10 beta customers within 30 days of launch
+- <5% churn during beta period
+
+## Resume
+Read the current plan in plans/ and state.json to pick up where work left off.
+Check recent logs for context on the last session.
+```
+
+The frontmatter requires `id` (unique within the workspace) and `spec_version`. The body describes the workflow, its phases, and how to resume. Keep it under 300 lines.
+
+<Tip>
+This two-file epic is already valid. An epic-aware loader will detect the `EPIC.md` alongside `SKILL.md` and treat the directory as a stateful workflow.
+</Tip>
+
+## Step 3: Add a plan
+
+Plans are the tactical layer -- what to do right now. Create a `plans/` directory with your first plan:
+
+```directory
+saas-launch/
+├── SKILL.md
+├── EPIC.md
+└── plans/
+    └── 001-initial.md
+```
+
+```markdown
+# Initial Architecture Plan
+
+Updated: 2026-03-06
+
+## Now
+- Choose primary database (PostgreSQL vs MongoDB)
+- Define API schema for core resources
+- Set up project repository structure
+
+## Next
+- Implement user authentication
+- Set up CI/CD pipeline
+- Create development environment
+
+## Blocked
+- (nothing currently blocked)
+```
+
+Every plan file must include a title heading, an `Updated:` line, and sections for `## Now`, `## Next`, and `## Blocked`. Keep plans under 100 lines each.
+
+When `## Now` is empty, the agent should log completion and create the next plan (or propose marking the epic complete).
+
+## Step 4: Add structured state
+
+`state.json` holds machine-readable facts that complement the human-readable plan:
+
+```directory
+saas-launch/
+├── SKILL.md
+├── EPIC.md
+├── plans/
+│   └── 001-initial.md
+├── state.json
+└── ...
+```
+
+```json
+{
+  "state_version": 1,
+  "status": "active",
+  "current_plan": "001-initial.md",
+  "milestone": "M1",
+  "progress": 0.1,
+  "blocked": false
+}
+```
+
+Three fields are reserved by the spec:
+
+| Field | Purpose |
+|-------|---------|
+| `state_version` | Schema version (defaults to `1` if absent) |
+| `status` | Must be `active`, `paused`, `complete`, or `abandoned` |
+| `current_plan` | Filename of the active plan in `plans/` |
+
+All other fields are epic-defined. Add whatever structured data your workflow needs.
+
+<Note>
+If `state.json` becomes unwieldy, switch to a `state/` directory with `state/core.json` for reserved fields and additional files for domain-specific state. Tooling checks `state/core.json` first.
+</Note>
+
+## Step 5: Add the log
+
+`log/` provides append-only history. Each entry is a markdown file with a timestamped filename:
+
+```directory
+saas-launch/
+├── SKILL.md
+├── EPIC.md
+├── plans/
+│   └── 001-initial.md
+├── state.json
+└── log/
+    └── 2026-03-06T10-00-00Z-agent-initial-setup.md
+```
+
+```markdown
+---
+actor: agent
+type: work
+epic: saas-launch
+duration_minutes: 15
+---
+
+## Initial setup
+
+Created epic structure with SKILL.md, EPIC.md, initial plan, and state.json.
+Defined four project phases and success criteria.
+
+### Changes
+- Created 001-initial.md plan with architecture tasks
+- Set state: milestone = "M1", progress = 0.1
+
+### Next
+- Begin architecture decisions per plan ## Now
+```
+
+Filename format: `YYYY-MM-DDTHH-MM-SSZ-{actor}-{slug}.md`
+
+The `actor` field can be `agent`, `human`, `cron`, `hook`, or a specific name. Log entries must never be edited after writing (except to redact secrets).
+
+## What you have now
+
+At this point your epic has everything needed for multi-session stateful work:
+
+```directory
+saas-launch/
+├── SKILL.md          # Routing and instructions
+├── EPIC.md           # Workflow definition and identity
+├── plans/            # What to do now
+│   └── 001-initial.md
+├── state.json        # Machine-readable facts
+└── log/              # What happened
+    └── 2026-03-06T10-00-00Z-agent-initial-setup.md
+```
+
+An agent resuming this epic will:
+1. Read `SKILL.md` for instructions
+2. Read `EPIC.md` for workflow context
+3. Read `state.json` for current status
+4. Read `001-initial.md` (the current plan) for what to do
+5. Read recent log entries for session continuity
+
+## Going further
+
+From here, you can add more capabilities as needed:
+
+- **`ROADMAP.md`** for long-term milestones and strategic direction
+- **`DECISIONS.md`** for a curated record of key decisions
+- **`hooks/`** for event-triggered automation (see the runtime spec)
+- **`cron.d/`** for recurring tasks like daily metric checks
+- **`policy.yml`** for autonomous operation constraints
+- **`skills/`** for epic-scoped sub-skills
+- **`artifacts/`** for produced outputs and deliverables
+
+See the [full specification](/epic-specification) for details on each component, or explore [epic archetypes](/epic-creation/archetypes) for patterns tailored to different use cases.

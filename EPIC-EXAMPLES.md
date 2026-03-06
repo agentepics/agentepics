@@ -1,0 +1,335 @@
+# Examples
+
+> Non-normative examples and patterns for the EPIC.md Standard.
+> **Version 0.5.0**
+
+This document collects examples and explanatory patterns that were previously
+embedded in the monolithic EPIC spec. It is descriptive, not normative.
+
+## Directory Trees
+
+### Bare Minimum
+
+```text
+my-task/
+├── SKILL.md
+└── EPIC.md
+```
+
+### Minimal Useful Epic
+
+```text
+my-task/
+├── SKILL.md
+├── EPIC.md
+├── plans/
+│   └── 001-initial.md
+└── log/
+    └── 2026-03-03T10-00-00Z-agent-started.md
+```
+
+### Autonomous Epic
+
+```text
+my-task/
+├── SKILL.md
+├── EPIC.md
+├── ROADMAP.md
+├── plans/
+├── state.json
+├── log/
+├── runtime/
+├── cron.d/
+│   └── daily-check.yml
+├── hooks/
+│   └── milestone-complete.d/
+│       ├── 010-slack.yml
+│       └── 020-review.md
+└── policy.yml
+```
+
+### Full Epic
+
+```text
+my-task/
+├── SKILL.md
+├── EPIC.md
+├── ROADMAP.md
+├── DECISIONS.md
+├── plans/
+├── state/
+│   └── core.json
+├── log/
+├── runtime/
+├── cron.d/
+├── hooks/
+│   └── milestone-complete.d/
+│       ├── 010-slack.yml
+│       └── 020-review.md
+├── policy.yml
+├── skills/
+├── artifacts/
+├── scripts/
+├── references/
+└── assets/
+```
+
+## ROADMAP Example
+
+```markdown
+# SaaS Launch — Roadmap
+
+## Vision
+Take a product from architecture to first paying customer.
+
+## Milestones
+
+### M1: Core Product ✅
+- [x] Architecture decisions
+- [x] Core implementation
+- Completed: 2026-02-28
+
+### M2: Beta Program 🔄
+- [ ] Invite beta users
+- [ ] Feedback collection pipeline
+- Target: 2026-03-15
+
+### M3: First Customer
+- [ ] Onboarding flow
+- [ ] Usage-based billing
+- Target: 2026-04-01
+
+## Success Criteria
+- 10 beta customers within 30 days of launch
+- <5% churn during beta period
+```
+
+## DECISIONS Example
+
+```markdown
+# Decisions
+
+### D1: PostgreSQL over MongoDB for primary store
+**Date:** 2026-03-02
+**Context:** Need relational queries across users, subscriptions, and usage data.
+**Decision:** PostgreSQL — strong relational model, better for our query patterns.
+**Alternatives considered:** MongoDB (more flexible schema, but harder to query across collections).
+**Status:** Accepted
+
+### D2: Stripe for billing
+**Date:** 2026-03-03
+**Context:** Need usage-based billing with metering support.
+**Decision:** Stripe Billing with metered subscriptions.
+**Status:** Accepted
+```
+
+## Plan Example
+
+```markdown
+# Billing Integration Plan
+
+Updated: 2026-03-03
+
+## Now
+- Set up PostgreSQL schema for users and subscriptions
+- Decision pending: free trial length (7 vs 14 days)
+
+## Next
+- Integrate Stripe billing with metered subscriptions
+- Draft onboarding flow for beta users
+
+## Blocked
+- Domain setup — waiting on DNS propagation
+
+## Recent Decisions
+- 2026-03-02: Chose PostgreSQL over MongoDB (see log/2026-03-02...)
+```
+
+## state.json Example
+
+```json
+{
+  "state_version": 1,
+  "status": "active",
+  "name": "Spectr MVP Launch",
+  "owner": "martin",
+  "started": "2026-02-15",
+  "current_plan": "002-billing-integration.md",
+  "milestone": "M2",
+  "progress": 0.4,
+  "blocked": false,
+  "target_customers": 10
+}
+```
+
+## Log Example
+
+Filename convention:
+
+`YYYY-MM-DDTHH-MM-SSZ-{actor}-{slug}.md`
+
+```markdown
+---
+actor: agent
+type: work
+epic: saas-launch
+duration_minutes: 12
+tokens_used: 48000
+---
+
+## Set up PostgreSQL schema
+
+Created tables for users, subscriptions, and usage metering.
+Added migration scripts and seed data for development.
+
+### Changes
+- Created `scripts/create_schema.sql`
+- Updated structured state: milestone = "M2"
+- Moved "database schema" from current plan/Now to completed
+
+### Next
+- Integrate Stripe billing (moved to current plan/Now)
+```
+
+## cron.d Example
+
+```yaml
+name: daily-metrics-check
+schedule: "0 9 * * *"
+timezone: UTC
+enabled: true
+run:
+  type: prompt
+  prompt: |
+    Check the product dashboard metrics for the last 24 hours.
+    Compare against targets in ROADMAP.md.
+    Log anomalies. Update structured state with latest numbers.
+  script: scripts/fetch_metrics.py
+context:
+  - ROADMAP.md
+  - state/core.json
+output:
+  log: true
+  update_state: true
+  notify: false
+```
+
+## hooks/ Examples
+
+### Prompt hook
+
+```markdown
+---
+enabled: true
+type: prompt
+timeout: 300
+---
+
+A milestone just completed in this epic. Review the ROADMAP.md, update status
+markers, and create a new plan in plans/ for the next milestone.
+If this was the final milestone, propose marking the epic complete.
+```
+
+### Agent hook
+
+```markdown
+---
+enabled: true
+type: agent
+timeout: 600
+max_turns: 12
+---
+
+A milestone just completed. Review ROADMAP.md, update milestone markers, and
+create a new plan in plans/ for the next milestone.
+If this was the final milestone, propose marking the epic complete.
+```
+
+### HTTP hook
+
+```yaml
+enabled: true
+type: http
+timeout: 30
+url: ${SLACK_WEBHOOK_URL}
+method: POST
+headers:
+  Content-Type: application/json
+body_template: |
+  {"text": "Epic {{epic_id}} milestone {{milestone}} completed"}
+retry:
+  max_attempts: 3
+  backoff_seconds: [1, 5, 15]
+```
+
+## policy.yml Example
+
+```yaml
+autonomy:
+  max_spend_per_run: 0.50
+  allowed_tools:
+    - web_search
+    - bash
+    - file_create
+  forbidden_actions:
+    - delete production data
+    - commit to main branch
+    - send external emails without approval
+
+hooks:
+  allowed_types:
+    - prompt
+    - script
+    - http
+    - agent
+  allowed_domains:
+    - hooks.slack.com
+    - api.pagerduty.com
+  max_timeout_seconds: 900
+
+escalation:
+  on_error: log_and_continue
+  on_ambiguity: ask_human
+  notify: martin@kindship.ai
+```
+
+## Composability Patterns
+
+### Pattern 1: Shared Skills
+
+Multiple epics can reference the same global skill. Epic-scoped skills override
+globals of the same name.
+
+### Pattern 2: Epic Workspace
+
+```text
+product-launch/
+├── launch-coordination/
+│   ├── SKILL.md
+│   ├── EPIC.md
+│   └── plans/
+├── backend-implementation/
+├── frontend-implementation/
+└── marketing-rollout/
+```
+
+### Pattern 3: Epic Chaining
+
+One epic's `status-changed` hook can hand work to the next epic through the
+agent or a shared artifact.
+
+### Pattern 4: Instantiation
+
+To start a new run of a workflow, populate working state (`state.json` or
+`state/core.json`, `plans/`, and `log/`) while leaving the workflow definition
+stable.
+
+## Log Compaction
+
+Over time, logs grow. Agents or cron jobs can compact logs by:
+
+1. creating monthly summaries such as `log/YYYY-MM-summary.md`
+2. moving raw entries to `log/archive/YYYY-MM/`
+3. keeping the last 10-20 entries unarchived
+
+This keeps `log/` scannable while preserving full history.
