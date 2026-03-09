@@ -11,7 +11,6 @@ Repository guidance for Claude Code.
   - `docs/epic-runtime.mdx`
   - `docs/epic-examples.mdx`
 - Reference and migration artifacts live in `reference/`:
-  - `reference/EPIC-STANDARD.original.md`
   - `reference/epic-spec-parity-checklist.md`
   - `reference/SKILL-STANDARD.md`
 - Reference Python library: `skills-ref/`
@@ -19,8 +18,6 @@ Repository guidance for Claude Code.
 ## Rules
 
 - Keep backward compatibility with the `SKILL.md` standard.
-- Preserve semantic parity with `reference/EPIC-STANDARD.original.md` until that
-  baseline is intentionally retired.
 - Keep `state/core.json` authoritative over `state.json` whenever `state/`
   exists.
 - Keep `policy.yml`, when present, treated as a hard constraint across the spec
@@ -33,6 +30,4 @@ Repository guidance for Claude Code.
 - Run `./scripts/validate.sh` after changing EPIC docs, proposal scripts, or
   maintainer docs.
 - Keep the EPIC version headers synchronized across the canonical docs pages.
-- Do not edit the preserved version header in
-  `reference/EPIC-STANDARD.original.md`.
 - Run `npm run dev` (or `cd docs && npx mint dev`) to preview the docs site.

@@ -1,7 +1,7 @@
 # EPIC Spec Parity Checklist
 
-This checklist maps the preserved monolith in `reference/EPIC-STANDARD.original.md`
-to the split `v0.5.1` docs-canonical EPIC spec.
+This checklist maps the legacy monolithic EPIC spec to the split `v0.5.1`
+docs-canonical EPIC spec.
 
 Validation rule: every row must have `Status = verified`.
 

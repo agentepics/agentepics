@@ -27,7 +27,6 @@ for path in \
   "docs/epic-specification.mdx" \
   "docs/epic-runtime.mdx" \
   "docs/epic-examples.mdx" \
-  "reference/EPIC-STANDARD.original.md" \
   "reference/SKILL-STANDARD.md" \
   "reference/epic-spec-parity-checklist.md"
 do
@@ -41,8 +40,7 @@ echo "Checking root EPIC spec mirrors are gone..."
 for path in \
   "EPIC-STANDARD.md" \
   "EPIC-RUNTIME.md" \
-  "EPIC-EXAMPLES.md" \
-  "EPIC-STANDARD.original.md"
+  "EPIC-EXAMPLES.md"
 do
   if [ -e "$path" ]; then
     echo "ERROR: root EPIC spec mirror still exists: $path" >&2
