@@ -12,6 +12,7 @@ Repository guidance for agents working in this repo.
   - `docs/epic-examples.mdx`
 - Reference and migration artifacts live in `reference/`:
   - `reference/epic-spec-parity-checklist.md`
+  - `reference/canonical-footer-maintenance.md`
   - `reference/SKILL-STANDARD.md`
 - Reference Python library: `skills-ref/`
 
