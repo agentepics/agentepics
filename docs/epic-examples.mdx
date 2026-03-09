@@ -4,7 +4,7 @@ sidebarTitle: "Examples"
 description: "Non-normative examples and patterns for Agent Epics."
 ---
 
-**Version 0.5.0**
+**Version 0.5.1**
 
 This page collects examples and explanatory patterns for Agent Epics. It is
 descriptive, not normative.
@@ -32,10 +32,11 @@ my-task/
 my-task/
 ├── SKILL.md
 ├── EPIC.md
-├── plans/
-│   └── 001-initial.md
-└── log/
-    └── 2026-03-03T10-00-00Z-agent-started.md
+└── runtime/
+    ├── plans/
+    │   └── 001-initial.md
+    └── log/
+        └── 2026-03-03T10-00-00Z-agent-started.md
 ```
 
 ### Autonomous epic
@@ -44,11 +45,11 @@ my-task/
 my-task/
 ├── SKILL.md
 ├── EPIC.md
-├── ROADMAP.md
-├── plans/
-├── state.json
-├── log/
 ├── runtime/
+│   ├── ROADMAP.md
+│   ├── plans/
+│   ├── state.json
+│   └── log/
 ├── cron.d/
 │   └── daily-check.yml
 ├── hooks/
@@ -64,13 +65,14 @@ my-task/
 my-task/
 ├── SKILL.md
 ├── EPIC.md
-├── ROADMAP.md
-├── DECISIONS.md
-├── plans/
-├── state/
-│   └── core.json
-├── log/
 ├── runtime/
+│   ├── ROADMAP.md
+│   ├── DECISIONS.md
+│   ├── plans/
+│   ├── state/
+│   │   └── core.json
+│   ├── log/
+│   └── artifacts/
 ├── cron.d/
 ├── hooks/
 │   └── milestone-complete.d/
@@ -78,13 +80,12 @@ my-task/
 │       └── 020-review.md
 ├── policy.yml
 ├── skills/
-├── artifacts/
 ├── scripts/
 ├── references/
 └── assets/
 ```
 
-## ROADMAP example
+## `runtime/ROADMAP.md` example
 
 ```markdown
 # SaaS Launch — Roadmap
@@ -114,7 +115,7 @@ Take a product from architecture to first paying customer.
 - &lt;5% churn during beta period
 ```
 
-## DECISIONS example
+## `runtime/DECISIONS.md` example
 
 ```markdown
 # Decisions
@@ -152,10 +153,10 @@ Updated: 2026-03-03
 - Domain setup — waiting on DNS propagation
 
 ## Recent Decisions
-- 2026-03-02: Chose PostgreSQL over MongoDB (see log/2026-03-02...)
+- 2026-03-02: Chose PostgreSQL over MongoDB (see runtime/log/2026-03-02...)
 ```
 
-## `state.json` example
+## `runtime/state.json` example
 
 ```json
 {
@@ -172,7 +173,7 @@ Updated: 2026-03-03
 }
 ```
 
-## Log example
+## `runtime/log/` example
 
 Filename convention:
 
@@ -212,12 +213,12 @@ run:
   type: both
   prompt: |
     Check the product dashboard metrics for the last 24 hours.
-    Compare against targets in ROADMAP.md.
+    Compare against targets in runtime/ROADMAP.md.
     Log anomalies. Update structured state with latest numbers.
   script: scripts/fetch_metrics.py
 context:
-  - ROADMAP.md
-  - state/core.json
+  - runtime/ROADMAP.md
+  - runtime/state/core.json
 output:
   log: true
   update_state: true
@@ -235,8 +236,8 @@ type: prompt
 timeout: 300
 ---
 
-A milestone just completed in this epic. Review the ROADMAP.md, update status
-markers, and create a new plan in plans/ for the next milestone.
+A milestone just completed in this epic. Review runtime/ROADMAP.md, update
+status markers, and create a new plan in runtime/plans/ for the next milestone.
 If this was the final milestone, propose marking the epic complete.
 ```
 
@@ -250,8 +251,8 @@ timeout: 600
 max_turns: 12
 ---
 
-A milestone just completed. Review ROADMAP.md, update milestone markers, and
-create a new plan in plans/ for the next milestone.
+A milestone just completed. Review runtime/ROADMAP.md, update milestone markers,
+and create a new plan in runtime/plans/ for the next milestone.
 If this was the final milestone, propose marking the epic complete.
 ```
 
@@ -317,7 +318,8 @@ product-launch/
 ├── launch-coordination/
 │   ├── SKILL.md
 │   ├── EPIC.md
-│   └── plans/
+│   └── runtime/
+│       └── plans/
 ├── backend-implementation/
 ├── frontend-implementation/
 └── marketing-rollout/
@@ -330,16 +332,16 @@ agent or a shared artifact.
 
 ### Pattern 4: Instantiation
 
-To start a new run of a workflow, populate working state (`state.json` or
-`state/core.json`, `plans/`, and `log/`) while leaving the workflow definition
-stable.
+To start a new run of a workflow, populate `runtime/` with working state
+(`runtime/state.json` or `runtime/state/core.json`, `runtime/plans/`, and
+`runtime/log/`) while leaving the workflow definition stable.
 
 ## Log compaction
 
 Over time, logs grow. Agents or cron jobs can compact logs by:
 
-1. creating monthly summaries such as `log/2026-03-01T00-00-00Z-agent-monthly-summary.md`
-2. moving raw entries to `log/archive/YYYY-MM/`
+1. creating monthly summaries such as `runtime/log/2026-03-01T00-00-00Z-agent-monthly-summary.md`
+2. moving raw entries to `runtime/log/archive/YYYY-MM/`
 3. keeping the last 10-20 entries unarchived
 
-This keeps `log/` scannable while preserving full history.
+This keeps `runtime/log/` scannable while preserving full history.

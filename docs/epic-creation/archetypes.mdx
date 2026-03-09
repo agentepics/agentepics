@@ -1,335 +1,303 @@
 ---
 title: "Epic archetypes"
 sidebarTitle: "Archetypes"
-description: "Three patterns for structuring epics: Workflow (reusable process), Instance (one-off project), and Capability (agent extension)."
+description: "Three ways to structure epics: reusable workflows, one-off stateful projects, and installed capabilities that keep operating over time."
 ---
 
-Epics fall into three broad archetypes. Each has a different relationship between the workflow definition and the instance state. Choosing the right archetype helps you structure your epic for its intended use.
+Epics fall into three broad archetypes. That is not just a filing decision. It
+is how you decide what kind of durable system you are building.
+
+A plain `SKILL.md` teaches an agent how to do something. An epic gives that
+know-how a state container, a working memory, a history, and optional runtime
+loops that can keep acting over time.
+
+That means every archetype can do things a plain skill cannot:
+
+- keep machine-readable state that survives across many sessions
+- carry several concurrent operating loops around the same work
+- accumulate decisions, artifacts, approvals, and logs
+- react to events such as a meeting starting or a milestone changing
+- run recurring work every day or every week without being re-explained
+
+The archetypes differ in what stays stable and what changes:
+
+- **Workflow epic**: the operating model stays stable while each run gets fresh `runtime/` state
+- **Instance epic**: the project itself is unique, so the epic captures one evolving effort in a long-lived `runtime/`
+- **Capability epic**: the epic stays installed and keeps operating as part of the agent, with persistent `runtime/` state
+
+If you want the wider argument first, read
+[Why state and reuse matter](/stateful-and-reusable). This page focuses on how
+to recognize and structure each pattern.
 
 ## Workflow epic
 
-A workflow epic defines a **reusable process**. The workflow definition (`EPIC.md`, `SKILL.md`) stays stable across runs while instance state (`plans/`, `state.json`, `log/`) changes each time.
+A workflow epic is a **reusable operating model**. You keep the same process,
+policies, references, hooks, and schedules, then run it again with new working
+state for a new client, product, manuscript, or campaign.
 
-Use this pattern when the same process will be repeated for different projects, products, or campaigns.
+This is what you want when the method should survive while the facts of the
+current run change.
 
-### Example: saas-launch
+### Why a plain skill falls short
 
-A product launch checklist that can be instantiated for each new SaaS product.
+A skill can explain how to deliver a website. It cannot natively carry forward:
+
+- which pages are approved for this client
+- which launch blockers are still open
+- what happened in the last client review
+- which recurring checks should run every Friday
+- what brief should be prepared automatically when the next review meeting starts
+
+That is the difference between reusable know-how and a reusable operating
+system.
+
+### Example: client-website-delivery
+
+This epic is reused for every new website project. The overall workflow stays
+the same, but each client run gets its own `runtime/` tree with plans,
+approvals, logs, and page state.
 
 ```directory
-saas-launch/
+client-website-delivery/
 ├── SKILL.md
 ├── EPIC.md
-├── ROADMAP.md
-├── plans/
-│   ├── 001-architecture.md
-│   └── 002-billing-integration.md
-├── state.json
-├── log/
-│   ├── 2026-03-01T09-00-00Z-agent-started.md
-│   ├── 2026-03-02T14-30-00Z-agent-database-decision.md
-│   └── 2026-03-03T11-00-00Z-agent-schema-setup.md
-├── DECISIONS.md
-├── scripts/
-│   └── fetch_metrics.py
+├── runtime/
+│   ├── ROADMAP.md
+│   ├── DECISIONS.md
+│   ├── plans/
+│   │   ├── 001-discovery.md
+│   │   ├── 002-design-approval.md
+│   │   └── 003-launch-readiness.md
+│   ├── state/
+│   │   ├── core.json
+│   │   ├── pages.json
+│   │   ├── approvals.json
+│   │   └── open-issues.json
+│   ├── log/
+│   │   ├── 2026-03-02T09-10-00Z-agent-audited-existing-site.md
+│   │   ├── 2026-03-04T14-30-00Z-human-approved-sitemap.md
+│   │   └── 2026-03-07T11-05-00Z-agent-updated-launch-checklist.md
+│   └── artifacts/
+│       ├── wireframes/
+│       ├── copy/
+│       └── exported-builds/
+├── hooks/
+│   ├── meeting-started.d/
+│   │   └── 010-prepare-client-review-brief.md
+│   └── milestone-complete.d/
+│       └── 020-create-next-plan.md
+├── cron.d/
+│   └── weekly-seo-check.yml
+├── policy.yml
 └── references/
-    └── launch-checklist.md
+    ├── brand-guidelines.md
+    └── competitor-notes.md
 ```
 
-**SKILL.md** -- generic routing that works for any product launch:
+**What this buys you**
 
-```yaml
----
-name: saas-launch
-description: >
-  Workflow for launching a SaaS product. Covers architecture decisions,
-  implementation, deployment, and first-customer onboarding. Activate
-  this epic when planning or executing a product launch.
----
-```
+- `runtime/state/pages.json` can track each page as `draft`, `approved`, `blocked`, or
+  `ready-to-ship`.
+- `runtime/state/approvals.json` can record who approved homepage copy and when.
+- `runtime/plans/003-launch-readiness.md` can become the current tactical loop for the
+  next session.
+- `cron.d/weekly-seo-check.yml` can keep the project healthy without a human
+  remembering to ask.
+- `hooks/meeting-started.d/010-prepare-client-review-brief.md` can assemble the
+  latest sitemap, open issues, approvals, and launch blockers the moment a
+  stakeholder meeting begins.
 
-**EPIC.md** -- reusable workflow definition:
-
-```mdx
----
-spec_version: 0.5.0
-id: saas-launch
-tags: [saas, launch, product]
-timezone: UTC
----
-
-# SaaS Launch Workflow
-
-## Purpose
-Take a product from architecture to first paying customer.
-
-## Phases
-1. Architecture decisions
-2. Core implementation
-3. Beta program
-4. First customer onboarding
-
-## Success Criteria
-- 10 beta customers within 30 days of launch
-- <5% churn during beta period
-
-## Resume
-Read current plan and state.json. Check recent logs for last session context.
-```
-
-**state.json** -- instance-specific state that changes each run:
-
-```json
-{
-  "state_version": 1,
-  "status": "active",
-  "current_plan": "002-billing-integration.md",
-  "milestone": "M2",
-  "progress": 0.4,
-  "blocked": false,
-  "target_customers": 10
-}
-```
-
-To start a new run of the workflow, reset the working state (`state.json`, `plans/`, `log/`) while keeping the workflow definition intact.
+The point is not just that the website project lasts longer. The point is that
+the epic becomes a reusable delivery system with durable memory and automation.
 
 ## Instance epic
 
-An instance epic is a **one-off effort** with unique scope. The `EPIC.md` body describes the specific project rather than a generic reusable workflow.
+An instance epic is a **one-off effort with unique scope**. The file set is not
+meant to be reset and reused as a template for the exact same work. It is meant
+to carry one real project all the way through.
 
-Use this pattern for campaigns, sprints, or projects that won't be repeated in the same form.
+This is what you want when the work accumulates too much context, too many
+dependencies, and too many decisions to be treated as a sequence of isolated
+sessions.
 
-### Example: q1-marketing-campaign
+### Why a plain skill falls short
 
-A specific marketing campaign with defined deliverables and timeline.
+A skill can explain how film production works. It cannot keep the living state
+of one actual feature film:
+
+- which script draft is current
+- which cast conversations are pending
+- which locations are approved or at risk
+- which financing assumptions are still valid
+- which daily production checks must keep running
+- what context should appear instantly when the morning production meeting starts
+
+That needs a persistent operating context, not just a how-to guide.
+
+### Example: feature-film
+
+This epic holds the development, financing, preproduction, production, and
+festival strategy for one specific film. It may run for months, with several
+operating loops around the same shared state.
 
 ```directory
-q1-marketing-campaign/
+feature-film/
 ├── SKILL.md
 ├── EPIC.md
-├── ROADMAP.md
-├── plans/
-│   └── 001-content-creation.md
-├── state.json
-├── log/
-│   └── 2026-01-15T09-00-00Z-agent-kickoff.md
-├── DECISIONS.md
-└── artifacts/
-    ├── blog-posts/
-    ├── social-media/
-    └── email-sequences/
+├── runtime/
+│   ├── ROADMAP.md
+│   ├── DECISIONS.md
+│   ├── plans/
+│   │   ├── 001-development.md
+│   │   ├── 002-financing.md
+│   │   ├── 003-preproduction.md
+│   │   └── 004-festival-strategy.md
+│   ├── state/
+│   │   ├── core.json
+│   │   ├── script.json
+│   │   ├── budget.json
+│   │   ├── casting.json
+│   │   ├── locations.json
+│   │   └── deliverables.json
+│   ├── log/
+│   │   ├── 2026-02-10T10-00-00Z-agent-updated-budget-scenarios.md
+│   │   ├── 2026-02-14T16-20-00Z-human-approved-shooting-window.md
+│   │   └── 2026-02-19T09-15-00Z-agent-created-preproduction-plan.md
+│   └── artifacts/
+│       ├── treatments/
+│       ├── script-drafts/
+│       ├── pitch-deck/
+│       ├── schedules/
+│       └── call-sheets/
+├── hooks/
+│   ├── meeting-started.d/
+│   │   └── 010-prepare-production-brief.md
+│   └── status-changed.d/
+│       └── 020-log-transition.md
+├── cron.d/
+│   ├── daily-shoot-readiness.yml
+│   └── weekly-deadline-review.yml
+├── policy.yml
+└── references/
+    ├── comps.md
+    ├── union-rules.md
+    └── location-constraints.md
 ```
 
-**SKILL.md** -- routing specific to this campaign:
+**What this buys you**
 
-```yaml
----
-name: q1-marketing-campaign
-description: >
-  Q1 2026 marketing campaign for product awareness and lead generation.
-  Covers content creation, social media, email sequences, and analytics.
-  Activate when working on Q1 marketing deliverables or reviewing campaign metrics.
----
-```
+- `runtime/state/script.json` can track draft number, locked scenes, rewrite
+  priorities, and outstanding notes.
+- `runtime/state/budget.json` can hold financing assumptions, approved ceilings, and
+  what changed after each investor conversation.
+- `runtime/state/locations.json` can record scouting status, permit risk, and fallback
+  options.
+- `cron.d/daily-shoot-readiness.yml` can check tomorrow's blockers every day
+  during production.
+- `hooks/meeting-started.d/010-prepare-production-brief.md` can open the right
+  summary for a financing meeting, casting review, or preproduction check-in.
 
-**EPIC.md** -- project-specific context (not a reusable template):
-
-```mdx
----
-spec_version: 0.5.0
-id: q1-marketing-campaign
-tags: [marketing, q1-2026, campaign]
-timezone: America/New_York
----
-
-# Q1 2026 Marketing Campaign
-
-## Context
-Launch campaign runs January 15 through March 31, 2026. Target audience is
-technical decision-makers at mid-market companies (100-500 employees).
-
-## Deliverables
-- 8 blog posts (2 per month, plus launch and wrap-up)
-- 30 social media posts across LinkedIn and Twitter
-- 3 email sequences (awareness, consideration, conversion)
-- Weekly analytics reports
-
-## Budget
-- Content creation: $5,000
-- Paid social: $3,000
-- Email tooling: $500/month
-
-## Key Dates
-- Jan 15: Campaign kickoff
-- Feb 1: First email sequence live
-- Mar 15: Mid-campaign review
-- Mar 31: Campaign wrap-up and retrospective
-
-## Resume
-Check the current plan for active deliverables. Review artifacts/ for
-completed work. Check state.json for budget tracking and deadline status.
-```
-
-**state.json** -- tracks campaign-specific metrics:
-
-```json
-{
-  "state_version": 1,
-  "status": "active",
-  "current_plan": "001-content-creation.md",
-  "blog_posts_published": 3,
-  "blog_posts_target": 8,
-  "social_posts_published": 12,
-  "social_posts_target": 30,
-  "email_sequences_live": 1,
-  "budget_spent": 3200,
-  "budget_total": 8500
-}
-```
-
-Instance epics often produce more artifacts than workflow epics. The `artifacts/` directory is where deliverables accumulate.
+This is where epics stop looking like long tasks and start looking like living
+containers for serious work.
 
 ## Capability epic
 
-A capability epic extends the **agent itself** with a long-lived capability, integration, or tool surface. The agent works with the epic as an installed feature rather than a project to complete.
+A capability epic extends the **agent itself**. It is not mainly something to
+finish. It is something to install, constrain, maintain, and let operate over
+time.
 
-Use this pattern for memory systems, integrations, monitoring, or any persistent agent capability.
+This is what you want when the agent should keep a durable service in place:
+memory, monitoring, briefing, ingestion, triage, or some other standing
+capability.
 
-### Example: memory-system
+### Why a plain skill falls short
 
-A persistent memory system that the agent uses across all conversations.
+A skill can explain how to prepare a meeting brief. It cannot stay installed as
+the system that:
+
+- scans the calendar every morning
+- keeps structured state on upcoming meetings and owners
+- prepares briefs automatically when a meeting starts
+- records decisions and follow-ups after the meeting ends
+- keeps improving the briefing process over time under policy
+
+That is an installed operating capability, not a one-shot instruction set.
+
+### Example: meeting-briefing-system
+
+This epic stays installed across the workspace. It continuously tracks upcoming
+meetings, prepares context packs, and updates durable meeting state over time.
 
 ```directory
-memory-system/
+meeting-briefing-system/
 ├── SKILL.md
 ├── EPIC.md
-├── plans/
-│   └── 001-maintenance.md
-├── state/
-│   ├── core.json
-│   └── memory-index.json
-├── log/
-│   └── 2026-02-01T09-00-00Z-agent-installed.md
+├── runtime/
+│   ├── plans/
+│   │   └── 001-maintenance-and-improvements.md
+│   ├── state/
+│   │   ├── core.json
+│   │   ├── meetings.json
+│   │   ├── contacts.json
+│   │   └── commitments.json
+│   ├── log/
+│   │   ├── 2026-03-01T07-00-00Z-agent-scanned-upcoming-calendar.md
+│   │   ├── 2026-03-01T08-55-00Z-agent-prepared-product-review-brief.md
+│   │   └── 2026-03-01T10-30-00Z-agent-recorded-follow-ups.md
+│   └── artifacts/
+│       └── briefs/
 ├── hooks/
-│   └── install.md
+│   ├── meeting-started.d/
+│   │   └── 010-assemble-brief.md
+│   └── status-changed.d/
+│       └── 020-log-health-transition.md
+├── cron.d/
+│   ├── daily-calendar-scan.yml
+│   └── nightly-followup-audit.yml
 ├── policy.yml
 ├── scripts/
-│   ├── search_memories.py
-│   └── compact_memories.py
-├── cron.d/
-│   └── weekly-compaction.yml
-└── artifacts/
-    └── memories/
+│   ├── fetch_calendar.py
+│   └── assemble_brief.py
+└── references/
+    └── briefing-template.md
 ```
 
-**SKILL.md** -- routing that activates the capability when relevant:
+**What this buys you**
 
-```yaml
----
-name: memory-system
-description: >
-  Persistent memory for the agent. Stores, retrieves, and manages
-  long-term memories across conversations. Activate when the user
-  asks to remember something, recall previous context, or manage
-  stored knowledge.
----
-```
+- `cron.d/daily-calendar-scan.yml` can look ahead and update `runtime/state/meetings.json`
+  before anyone asks.
+- `hooks/meeting-started.d/010-assemble-brief.md` can prepare the current
+  agenda, relevant decisions, open commitments, and stakeholder context as the
+  meeting begins.
+- `runtime/state/commitments.json` can preserve promises made in prior meetings so the
+  system does not lose track of them next week.
+- `runtime/plans/001-maintenance-and-improvements.md` can hold work to improve the
+  capability itself without confusing that with user-facing meeting operations.
 
-**EPIC.md** -- defines the capability rather than a project:
-
-```mdx
----
-spec_version: 0.5.0
-id: memory-system
-tags: [memory, agent-capability, persistence]
-timezone: UTC
----
-
-# Memory System
-
-## Purpose
-Provide the agent with persistent, searchable memory across conversations.
-Memories are stored as individual files in artifacts/memories/ and indexed
-in state/memory-index.json.
-
-## Operations
-- **Store**: Save a new memory with tags and context
-- **Recall**: Search memories by keyword, tag, or semantic similarity
-- **Forget**: Mark a memory as archived (never delete, for audit trail)
-- **Compact**: Merge related memories to reduce redundancy
-
-## Constraints
-- Never store secrets, tokens, or credentials
-- Always tag memories with source conversation date
-- Run weekly compaction to keep the index manageable
-
-## Resume
-Check state/core.json for system health. Review the maintenance plan
-for any pending compaction or cleanup tasks.
-```
-
-**state/core.json** -- tracks capability health:
-
-```json
-{
-  "state_version": 1,
-  "status": "active",
-  "current_plan": "001-maintenance.md",
-  "total_memories": 142,
-  "last_compaction": "2026-03-01T00:00:00Z",
-  "index_size_kb": 48
-}
-```
-
-**policy.yml** -- constrains what the memory system can do autonomously:
-
-```yaml
-autonomy:
-  allowed_tools:
-    - bash
-    - file_create
-  forbidden_actions:
-    - delete memory files
-    - access external APIs
-    - modify other epics
-
-escalation:
-  on_error: log_and_continue
-  on_ambiguity: ask_human
-```
-
-**cron.d/weekly-compaction.yml** -- automated maintenance:
-
-```yaml
-name: weekly-compaction
-schedule: "0 3 * * 0"
-timezone: UTC
-enabled: true
-run:
-  type: both
-  prompt: |
-    Run memory compaction. Merge related memories, update the index,
-    and log the results. Archive memories older than 90 days.
-  script: scripts/compact_memories.py
-context:
-  - state/memory-index.json
-output:
-  log: true
-  update_state: true
-```
-
-Capability epics tend to be long-lived and rarely reach `complete` status. They are maintained rather than finished, with `plans/` focusing on maintenance tasks and improvements rather than project milestones.
+This is the archetype that makes it obvious an epic can be a permanent agent
+surface, not just a project folder.
 
 ## Choosing an archetype
 
 | Question | Workflow | Instance | Capability |
 |----------|----------|----------|------------|
-| Will it be reused? | Yes, for different projects | No, it's a one-off | Yes, it's always active |
-| Does it finish? | Yes, each run completes | Yes, when deliverables are done | Rarely -- it's maintained |
-| What does `EPIC.md` describe? | A reusable process | A specific project | A capability definition |
-| Where do outputs go? | Varies by run | `artifacts/` | `artifacts/` or integrated |
-| Typical extras | `ROADMAP.md`, `DECISIONS.md` | `artifacts/`, `DECISIONS.md` | `hooks/`, `cron.d/`, `policy.yml` |
+| What stays stable? | The operating model | The project identity | The installed service |
+| What changes over time? | Per-run state and artifacts | Nearly everything inside the project | Operational state, logs, and maintenance plans |
+| Will it be reused? | Yes, for many runs | No, it is one real effort | Yes, as a standing capability |
+| Does it finish? | Each run does | Usually yes | Rarely |
+| Typical operating loops | Plans, approvals, recurring checks, review hooks | Plans, deadlines, meeting hooks, production checks | Cron jobs, event hooks, durable service state |
+| Best mental model | A reusable operating procedure | A living project container | An installed subsystem for the agent |
 
-These archetypes are patterns, not rigid categories. Many epics blend elements of more than one. Use whichever structure best fits your workflow.
+These are patterns, not rigid categories. A website program may blend workflow
+and capability traits. A large project may start as an instance epic and later
+spin out a reusable workflow epic.
 
-See the [full specification](/epic-specification) for details on every file and field, or [get started](/epic-creation/getting-started) building your first epic.
+The important decision is not which label sounds best. It is which structure
+best captures the durable state, recurring behavior, and reusable operating
+surface your agent actually needs.
+
+Next:
+
+- [Get started](/epic-creation/getting-started) if you are about to create one.
+- [Read the runtime specification](/epic-runtime) for hooks, cron, and policy.
+- [Read the full epic specification](/epic-specification) for file semantics.

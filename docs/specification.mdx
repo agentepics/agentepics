@@ -1,228 +1,176 @@
 ---
-title: "Specification"
-description: "The complete format specification for Agent Skills."
+title: "Epic Reference"
+description: "Reference entry point for Agent Epics: the required files, core operating surface, runtime extensions, and compatibility model."
 ---
 
-This document defines the Agent Skills format.
+This page is the main reference entry point for Agent Epics.
 
-## Directory structure
+## Which page to read
 
-A skill is a directory containing at minimum a `SKILL.md` file:
+- Read **this page** when you want the shortest accurate map of the EPIC
+  surface: required files, state precedence, runtime extensions, and where each
+  rule lives.
+- Read [Epic Specification](/epic-specification) when you need the normative
+  portable file-format rules for `EPIC.md`, plans, state, logs, and precedence.
+- Read [Epic Runtime](/epic-runtime) when you need executor behavior for
+  `hooks/`, `cron.d/`, `policy.yml`, and the live `runtime/` tree.
+- Read [Epic Examples](/epic-examples) or the
+  [Worked example](/epic-creation/worked-example) when you want concrete
+  patterns rather than the normative surface.
 
-```
-skill-name/
-└── SKILL.md          # Required
-```
+If you need the full normative details, continue to:
 
-<Tip>
-You can optionally include [additional directories](#optional-directories) such as `scripts/`, `references/`, and `assets/` to support your skill.
-</Tip>
+- [Epic Specification](/epic-specification) for core EPIC semantics
+- [Epic Runtime](/epic-runtime) for hooks, cron, policy, and executor behavior
 
-## SKILL.md format
+This page summarizes the model those documents define. It is the reference map,
+not the full normative text.
 
-The `SKILL.md` file must contain YAML frontmatter followed by Markdown content.
+## What an epic is
 
-### Frontmatter (required)
+An epic is a valid `SKILL.md` package plus an `EPIC.md` file and, optionally,
+an operating file set around it.
 
-```yaml
----
-name: skill-name
-description: A description of what this skill does and when to use it.
----
-```
-
-With optional fields:
-
-```yaml
----
-name: pdf-processing
-description: Extract text and tables from PDF files, fill forms, merge documents.
-license: Apache-2.0
-metadata:
-  author: example-org
-  version: "1.0"
----
-```
-
-| Field | Required | Constraints |
-|-------|----------|-------------|
-| `name` | Yes | Max 64 characters. Lowercase letters, numbers, and hyphens only. Must not start or end with a hyphen. |
-| `description` | Yes | Max 1024 characters. Non-empty. Describes what the skill does and when to use it. |
-| `license` | No | License name or reference to a bundled license file. |
-| `compatibility` | No | Max 500 characters. Indicates environment requirements (intended product, system packages, network access, etc.). |
-| `metadata` | No | Arbitrary key-value mapping for additional metadata. |
-| `allowed-tools` | No | Space-delimited list of pre-approved tools the skill may use. (Experimental) |
-
-#### `name` field
-
-The required `name` field:
-- Must be 1-64 characters
-- May only contain unicode lowercase alphanumeric characters and hyphens (`a-z` and `-`)
-- Must not start or end with `-`
-- Must not contain consecutive hyphens (`--`)
-- Must match the parent directory name
-
-Valid examples:
-```yaml
-name: pdf-processing
-```
-```yaml
-name: data-analysis
-```
-```yaml
-name: code-review
+```directory
+my-epic/
+├── SKILL.md
+├── EPIC.md
+├── runtime/
+│   ├── plans/
+│   ├── state.json
+│   ├── log/
+│   ├── ROADMAP.md
+│   ├── DECISIONS.md
+│   └── artifacts/
+├── hooks/
+├── cron.d/
+├── policy.yml
+├── skills/
+├── scripts/
+├── references/
+└── assets/
 ```
 
-Invalid examples:
-```yaml
-name: PDF-Processing  # uppercase not allowed
-```
-```yaml
-name: -pdf  # cannot start with hyphen
-```
-```yaml
-name: pdf--processing  # consecutive hyphens not allowed
-```
+The key distinction is that the epic can hold durable state and operating
+behavior, not just reusable instructions.
 
-#### `description` field
+## Required files
 
-The required `description` field:
-- Must be 1-1024 characters
-- Should describe both what the skill does and when to use it
-- Should include specific keywords that help agents identify relevant tasks
+Every epic requires:
 
-Good example:
-```yaml
-description: Extracts text and tables from PDF files, fills PDF forms, and merges multiple PDFs. Use when working with PDF documents or when the user mentions PDFs, forms, or document extraction.
-```
+- `SKILL.md` for discovery and activation
+- `EPIC.md` for durable identity and operating definition
 
-Poor example:
-```yaml
-description: Helps with PDFs.
-```
+`SKILL.md` keeps the package compatible with existing skill loaders.
+`EPIC.md` is what makes the package an epic.
 
-#### `license` field
+## `EPIC.md`
 
-The optional `license` field:
-- Specifies the license applied to the skill
-- We recommend keeping it short (either the name of a license or the name of a bundled license file)
+`EPIC.md` contains:
 
-Example:
-```yaml
-license: Proprietary. LICENSE.txt has complete terms
-```
+- YAML frontmatter with required identity fields
+- a Markdown body describing the epic's purpose, scope, phases, success model,
+  and resumption guidance
 
-#### `compatibility` field
+Required frontmatter fields:
 
-The optional `compatibility` field:
-- Must be 1-500 characters if provided
-- Should only be included if your skill has specific environment requirements
-- Can indicate intended product, required system packages, network access needs, etc.
+| Field | Purpose |
+|-------|---------|
+| `id` | Unique epic identifier within the workspace |
+| `spec_version` | EPIC spec version targeted by the file |
 
-Examples:
-```yaml
-compatibility: Designed for Claude Code (or similar products)
-```
-```yaml
-compatibility: Requires git, docker, jq, and access to the internet
-```
+Common optional fields:
 
-<Note>
-Most skills do not need the `compatibility` field.
-</Note>
+| Field | Purpose |
+|-------|---------|
+| `tags` | Lightweight classification tags |
+| `timezone` | Default timezone for runtime behavior |
 
-#### `metadata` field
+The body should describe what stays true across sessions and, for reusable
+workflow epics, across runs.
 
-The optional `metadata` field:
-- A map from string keys to string values
-- Clients can use this to store additional properties not defined by the Agent Skills spec
-- We recommend making your key names reasonably unique to avoid accidental conflicts
+## Core operating files
 
-Example:
-```yaml
-metadata:
-  author: example-org
-  version: "1.0"
-```
+The core operating surface is usually built from these files:
 
-#### `allowed-tools` field
+| File or directory | Role |
+|-------------------|------|
+| `runtime/plans/` | Tactical working loop: now, next, blocked |
+| `runtime/state.json` or `runtime/state/` | Machine-readable facts and lifecycle state |
+| `runtime/log/` | Append-only durable history |
+| `runtime/ROADMAP.md` | Longer-horizon milestones for the current run |
+| `runtime/DECISIONS.md` | Curated decision memory for the current run |
+| `runtime/artifacts/` | Outputs, deliverables, and generated work |
 
-The optional `allowed-tools` field:
-- A space-delimited list of tools that are pre-approved to run
-- Experimental. Support for this field may vary between agent implementations
+An epic does not need all of them to be valid. They appear as the epic is used.
 
-Example:
-```yaml
-allowed-tools: Bash(git:*) Bash(jq:*) Read
-```
+## State precedence
 
-### Body content
+When both state forms exist:
 
-The Markdown body after the frontmatter contains the skill instructions. There are no format restrictions. Write whatever helps agents perform the task effectively.
+- `runtime/state/core.json` is authoritative over `runtime/state.json`
 
-Recommended sections:
-- Step-by-step instructions
-- Examples of inputs and outputs
-- Common edge cases
+Reserved state fields:
 
-Note that the agent will load this entire file once it's decided to activate a skill. Consider splitting longer `SKILL.md` content into referenced files.
+| Field | Meaning |
+|-------|---------|
+| `state_version` | Schema version for the structured state |
+| `status` | Lifecycle status: `active`, `paused`, `complete`, `abandoned` |
+| `current_plan` | Active plan filename in `runtime/plans/` |
 
-## Optional directories
+Everything else in structured state is epic-defined.
 
-### scripts/
+## Logs
 
-Contains executable code that agents can run. Scripts should:
-- Be self-contained or clearly document dependencies
-- Include helpful error messages
-- Handle edge cases gracefully
+Logs provide durable continuity across sessions, collaborators, and autonomous
+runs.
 
-Supported languages depend on the agent implementation. Common options include Python, Bash, and JavaScript.
+Filename format:
 
-### references/
+`YYYY-MM-DDTHH-MM-SSZ-{actor}-{slug}.md`
 
-Contains additional documentation that agents can read when needed:
-- `REFERENCE.md` - Detailed technical reference
-- `FORMS.md` - Form templates or structured data formats
-- Domain-specific files (`finance.md`, `legal.md`, etc.)
+Logs are append-only except for redaction.
 
-Keep individual [reference files](#file-references) focused. Agents load these on demand, so smaller files mean less use of context.
+## Runtime surface
 
-### assets/
+Runtime extensions let an epic operate beyond interactive resumption:
 
-Contains static resources:
-- Templates (document templates, configuration templates)
-- Images (diagrams, examples)
-- Data files (lookup tables, schemas)
+| Feature | Purpose |
+|---------|---------|
+| `hooks/` | Event-triggered reactions |
+| `cron.d/` | Recurring execution |
+| `policy.yml` | Hard constraints on autonomous operation |
+| `runtime/` | Portable live state for the current run |
 
-## Progressive disclosure
+These features are specified in [Epic Runtime](/epic-runtime). A compliant
+executor must either honor them or surface that it does not support them.
 
-Skills should be structured for efficient use of context:
+## Archetypes
 
-1. **Metadata** (~100 tokens): The `name` and `description` fields are loaded at startup for all skills
-2. **Instructions** (< 5000 tokens recommended): The full `SKILL.md` body is loaded when the skill is activated
-3. **Resources** (as needed): Files (e.g. those in `scripts/`, `references/`, or `assets/`) are loaded only when required
+Most epics fall into one of three patterns:
 
-Keep your main `SKILL.md` under 500 lines. Move detailed reference material to separate files.
+- **Workflow epic**: reusable operating model with fresh state for each run
+- **Instance epic**: one specific long-lived project
+- **Capability epic**: installed agent capability that keeps operating over time
 
-## File references
+See [Epic archetypes](/epic-creation/archetypes) for concrete examples.
 
-When referencing other files in your skill, use relative paths from the skill root:
+## Compatibility model
 
-```markdown
-See [the reference guide](references/REFERENCE.md) for details.
+Every epic is still a valid skill package. That means:
 
-Run the extraction script:
-scripts/extract.py
-```
+- skill-aware systems can still discover `SKILL.md`
+- epic-aware systems can additionally detect `EPIC.md`
+- the surrounding operating files provide durable state, memory, and runtime behavior
 
-Keep file references one level deep from `SKILL.md`. Avoid deeply nested reference chains.
+If you need the underlying `SKILL.md` compatibility rules, read the
+[SKILL.md Reference](/skill-specification).
 
-## Validation
+## Implementation references
 
-Use the [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref) reference library to validate your skills:
-
-```bash
-skills-ref validate ./my-skill
-```
-
-This checks that your `SKILL.md` frontmatter is valid and follows all naming conventions.
+- [Epic Specification](/epic-specification) for normative core rules
+- [Epic Runtime](/epic-runtime) for executor and runtime behavior
+- [Worked example](/epic-creation/worked-example) for one end-to-end reusable website epic
+- [Epic Usage](/epic-usage) for how agents materialize `runtime/` plans, state, logs, and runtime evolution over time
+- [Migrating from 0.5.0 to 0.5.1](/epic-migration-0-5-1) for the filesystem move to `runtime/`
+- [How to add EPIC support](/client-implementation/add-epics-support) for harness implementation guidance

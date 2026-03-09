@@ -1,0 +1,187 @@
+---
+title: "Scaffolding epics with create-epic"
+sidebarTitle: "Scaffolding epics"
+description: "Use the create-epic skill to scaffold a complete Agent Epic with all required and operational files, then validate it with the bundled validator."
+---
+
+The [`create-epic`](https://github.com/agentepics/skills/tree/main/create-epic)
+skill scaffolds a complete Agent Epic from a description or structured inputs. It
+generates all the files the spec requires — `SKILL.md`, `EPIC.md`, `runtime/`
+state, hooks, cron jobs, and policy — so you start with a valid, operational
+epic rather than an empty directory.
+
+Use it when you want to get a working epic quickly. For full control over every
+file, follow the [manual authoring guide](/epic-creation/getting-started) instead.
+
+## What it generates
+
+The skill creates a full epic directory:
+
+```directory
+{name}/
+├── SKILL.md              # Routing and activation instructions
+├── EPIC.md               # Workflow definition with YAML frontmatter
+├── runtime/
+│   ├── state.json        # Initial structured state
+│   ├── plans/
+│   │   └── 001-initial.md # First tactical plan
+│   └── log/
+│       └── .gitkeep      # Preserve empty directory
+├── hooks/
+│   ├── install.md        # First-activation hook
+│   ├── status-changed.md # Pause/resume handling
+│   └── ...               # Additional hooks based on archetype
+├── cron.d/               # Scheduled jobs (if autonomous)
+│   └── {schedule}.yml
+└── policy.yml            # Autonomy constraints
+```
+
+Every generated file follows the [EPIC specification v0.5.1](/epic-specification)
+and is populated with content specific to your epic — no generic placeholder text.
+
+## The operating loop
+
+The skill follows six steps:
+
+1. **Gather inputs** — collect name, title, objective, category, and archetype
+   from the user. If the user provides a freeform description, infer the fields
+   from context and ask only for what cannot be reasonably inferred.
+2. **Infer defaults** — choose tags, cron schedule, hook set, and policy limits
+   based on the archetype and category.
+3. **Generate files** — create every file in the output structure above, writing
+   content specific to the epic's objective and archetype.
+4. **Populate state and plan** — fill `runtime/state.json` with the reserved fields
+   (`state_version`, `status`, `current_plan`) plus epic-specific fields, and
+   write the initial plan with concrete actions.
+5. **Validate** — run `validate-epic.sh` against the scaffolded directory to
+   catch structural errors before the user sees the result.
+6. **Report** — present the created file tree, validator output, and a one-line
+   summary of each file.
+
+## Inputs
+
+| Field | Required | Description |
+|---|---|---|
+| **name** | yes | Lowercase-with-hyphens identifier (e.g., `deploy-pipeline`). Must match the directory name and stay under 64 characters. |
+| **title** | yes | Human-readable name (e.g., "Deploy Pipeline"). |
+| **objective** | yes | What the epic accomplishes — one or two sentences. |
+| **category** | yes | Execution, Planning, Automation, Governance, Communication, or a custom category. |
+| **archetype** | yes | `workflow`, `instance`, or `capability`. See [Epic archetypes](/epic-creation/archetypes) for guidance on which to choose. |
+| **cron schedule** | no | How often the epic should run autonomously (e.g., `0 9 * * *` for daily at 09:00 UTC). Omit for manual-only epics. |
+| **tags** | no | Keywords for discovery. |
+
+<Tip>
+If you already know the archetype but are unsure about the other fields, just
+describe what you want the epic to do. The skill will infer the rest and confirm
+before generating.
+</Tip>
+
+## The validator: `validate-epic.sh`
+
+The skill runs `validate-epic.sh` as its final check, but the validator is a
+standalone script that works on any epic — not just scaffolded ones.
+
+### What it checks
+
+The validator runs checks across eleven categories:
+
+1. **Name format** — lowercase letters, digits, hyphens only; no consecutive
+   hyphens; 64-character limit.
+2. **Required files** — `SKILL.md` and `EPIC.md` must exist.
+3. **SKILL.md structure** — must have Purpose, Operating loop, and Rules
+   sections; should reference `runtime/state.json` and `runtime/log/`.
+4. **EPIC.md frontmatter** — must have `spec_version: 0.5.1` and an `id` that
+   matches the directory name.
+5. **EPIC.md body** — must have Objective, Phases, Success criteria, State to
+   preserve, Guardrails, and Resume sections.
+6. **runtime/state.json** — must have `state_version`, `status`, and `current_plan`
+   reserved fields; `status` must be one of `active`, `paused`, `complete`, or
+   `abandoned`; must be valid JSON.
+7. **runtime/plans/** — must contain at least one `.md` file; each plan must have Now,
+   Next, and Blocked sections.
+8. **runtime/log/** — directory must exist.
+9. **hooks/** — must have an `install.md` hook; each hook must have YAML
+   frontmatter with a valid `type` field and a prompt body.
+10. **cron.d/** — each YAML file must have `name`, `schedule`, `enabled`, and
+    `run` fields; schedule must be a valid 5-field cron expression.
+11. **Cross-file consistency** — `current_plan` in `runtime/state.json` must point
+    to an existing file in `runtime/plans/`; state references should be
+    consistent between `EPIC.md` and `SKILL.md`.
+
+### Running the validator standalone
+
+```bash
+bash scripts/validate-epic.sh <epic-directory>
+```
+
+The validator prints a check-by-check report with pass, fail, and warning
+indicators, followed by a summary. It exits `0` if all checks pass, `1` if any
+check fails, and `2` for usage errors.
+
+<Tip>
+The validator works on any epic directory, not just ones created by create-epic.
+Run it against your hand-authored epics to catch structural issues early.
+</Tip>
+
+### Reading the output
+
+```
+Validating epic: deploy-pipeline
+Directory: /path/to/deploy-pipeline
+
+Name validation
+  ✓ Name uses valid characters (lowercase, digits, hyphens)
+  ✓ Name length OK (15/64)
+  ✓ No consecutive hyphens in name
+
+Required files
+  ✓ SKILL.md exists
+  ✓ EPIC.md exists
+
+...
+
+━━━ Summary ━━━
+Epic:     deploy-pipeline
+Checks:   34
+Passed:   32
+Failed:   0
+Warnings: 2
+
+Epic is valid.
+```
+
+Failures must be fixed. Warnings are advisory — they flag missing recommended
+fields or non-canonical hook names, but they do not prevent the epic from being
+valid.
+
+## Example usage
+
+Ask the agent to create an epic from a description:
+
+```
+Create a new epic for managing our weekly engineering retrospective.
+It should run every Monday at 10am, collect feedback from the team,
+and produce a summary report.
+```
+
+The skill infers the inputs:
+
+- **name:** `engineering-retro`
+- **title:** Engineering Retrospective
+- **objective:** Run a weekly engineering retrospective cycle
+- **category:** Communication
+- **archetype:** workflow
+- **cron schedule:** `0 10 * * 1`
+
+It then generates the full directory, runs the validator, and reports the result.
+
+## Next steps
+
+- [Epic creation guide](/epic-creation/getting-started) — manual authoring for
+  full control over every file
+- [Worked example](/epic-creation/worked-example) — a complete epic walked
+  through end to end
+- [Using scripts](/epic-creation/using-scripts) — how to bundle and design
+  scripts for agentic use
+- [Evaluating epics](/epic-creation/evaluating-epics) — how to test whether your
+  epic works reliably

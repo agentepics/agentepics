@@ -1,46 +1,36 @@
 ---
-title: "Getting started with epics"
-sidebarTitle: "Getting started"
-description: "A step-by-step guide to creating your first Agent Epic, from a minimal two-file setup to a fully functional stateful workflow."
+title: "Epic creation"
+sidebarTitle: "Epic creation"
+description: "How to author a reusable Agent Epic: define the workflow, write strong phases, and attach the references, skills, and scripts each phase needs."
 ---
 
-This guide walks you through creating an epic incrementally. Each step adds a new layer of capability.
+<Tip>
+Want to scaffold an epic automatically? See [Scaffolding epics with create-epic](/epic-creation/create-epic-skill).
+</Tip>
 
-## Step 1: Create the SKILL.md
+This guide is about **authoring an epic definition**.
 
-Every epic starts as a skill. Create a directory and add a `SKILL.md` with routing metadata and instructions:
+It is not about runtime operation yet. At creation time, the goal is to define
+something reusable and intelligible: what the epic is for, when it activates,
+how it is structured, what phases it moves through, and what tools or supporting
+skills each phase depends on.
 
-```directory
-saas-launch/
-└── SKILL.md
-```
+An epic becomes powerful later because it can hold durable state and runtime
+behavior. But first it needs a good operating definition.
 
-```mdx
----
-name: saas-launch
-description: >
-  Workflow for launching a SaaS product. Covers architecture decisions,
-  implementation, deployment, and first-customer onboarding. Activate
-  this epic when planning or executing a product launch.
----
+If you want the motivation, read
+[Why state and reuse matter](/stateful-and-reusable). If you want the
+operational side, read [Epic Usage](/epic-usage).
 
-# SaaS Launch
+## What you are creating
 
-## When to activate
-Use this epic when planning or executing a new product launch.
+At minimum, an epic is:
 
-## How to operate
-1. Read EPIC.md for workflow context and phases.
-2. Follow the resumption sequence: load state, current plan, and recent logs.
-3. Work through the current plan's ## Now section.
-4. Log what you did. Update state and plan before ending the session.
-```
+- a valid `SKILL.md` package for discovery and activation
+- an `EPIC.md` file that defines the workflow or capability itself
 
-The `name` field must be lowercase alphanumeric with hyphens, max 64 characters, and must match the directory name. The `description` should be specific enough for an agent to know when to activate it.
-
-## Step 2: Add the EPIC.md
-
-This is what turns a skill into an epic. Create `EPIC.md` with identity frontmatter and a workflow definition:
+Those two files hold the reusable part of the epic. They should describe what
+stays stable across runs, not the transient details of one session.
 
 ```directory
 saas-launch/
@@ -48,9 +38,46 @@ saas-launch/
 └── EPIC.md
 ```
 
+## Step 1: Write `SKILL.md` for activation
+
+`SKILL.md` tells an agent when this epic is relevant and why it should load it.
+
 ```mdx
 ---
-spec_version: 0.5.0
+name: saas-launch
+description: >
+  Workflow for launching a SaaS product. Activate this epic when planning
+  or executing a new product launch.
+---
+
+# SaaS Launch
+
+## When to activate
+Use this epic when the work is about launching a SaaS product.
+
+## What it helps with
+- defining the launch phases
+- coordinating supporting work
+- keeping the operating model reusable across launches
+```
+
+Write `SKILL.md` to be:
+
+- specific enough that the agent activates it at the right time
+- general enough that it still works across multiple runs or instances
+- short enough that activation stays cheap
+
+The `name` field must use Unicode lowercase letters, digits, and hyphens,
+match the directory name, and stay under 64 characters.
+
+## Step 2: Write `EPIC.md` for the durable definition
+
+`EPIC.md` is where the real epic starts. It defines the purpose, scope, phases,
+success criteria, and resumption model.
+
+```mdx
+---
+spec_version: 0.5.1
 id: saas-launch
 tags: [saas, launch, product]
 timezone: UTC
@@ -61,173 +88,176 @@ timezone: UTC
 ## Purpose
 Take a product from architecture to first paying customer.
 
-## Phases
-1. Architecture decisions
-2. Core implementation
-3. Beta program
-4. First customer onboarding
+## Scope
+This epic covers launch planning, implementation coordination, beta readiness,
+launch readiness, and early customer onboarding.
 
 ## Success Criteria
-- 10 beta customers within 30 days of launch
-- <5% churn during beta period
+- Launch to first real users
+- Reach first paying customer
+- Keep the launch process reusable for future products
 
 ## Resume
-Read the current plan in plans/ and state.json to pick up where work left off.
-Check recent logs for context on the last session.
+Review the current phase, active plan, and recent history before continuing.
 ```
 
-The frontmatter requires `id` (unique within the workspace) and `spec_version`. The body describes the workflow, its phases, and how to resume. Keep it under 300 lines.
+The body should stay durable. Write what remains true across sessions and, for
+workflow epics, across runs.
 
-<Tip>
-This two-file epic is already valid. An epic-aware loader will detect the `EPIC.md` alongside `SKILL.md` and treat the directory as a stateful workflow.
-</Tip>
+## Step 3: Write strong phase descriptions
 
-## Step 3: Add a plan
+The most important authoring work is usually not the frontmatter. It is the
+phase design.
 
-Plans are the tactical layer -- what to do right now. Create a `plans/` directory with your first plan:
+Bad phase descriptions are vague labels:
 
-```directory
-saas-launch/
-├── SKILL.md
-├── EPIC.md
-└── plans/
-    └── 001-initial.md
-```
+- “build product”
+- “launch”
+- “marketing”
+
+Strong phase descriptions tell the agent:
+
+- what this phase is trying to achieve
+- what inputs it depends on
+- what skills, scripts, or references it should consult
+- what decisions are expected here
+- what counts as done
+- what should happen next
+
+For example:
 
 ```markdown
-# Initial Architecture Plan
+## Phases
 
-Updated: 2026-03-06
+### 1. Architecture decisions
+Choose the core system shape for the product. Evaluate database, API, auth, and
+deployment architecture. Use the architecture review skill and relevant
+references before locking decisions.
 
-## Now
-- Choose primary database (PostgreSQL vs MongoDB)
-- Define API schema for core resources
-- Set up project repository structure
+Exit criteria:
+- primary database selected
+- API shape documented
+- deployment approach chosen
 
-## Next
-- Implement user authentication
-- Set up CI/CD pipeline
-- Create development environment
+### 2. Core implementation
+Build the minimum production path for the product. Use the backend and frontend
+implementation skills, follow the architecture decisions already made, and keep
+open questions visible.
 
-## Blocked
-- (nothing currently blocked)
+Exit criteria:
+- core product flow works end to end
+- release blockers are known
+
+### 3. Beta readiness
+Prepare onboarding, support, analytics, and feedback loops for first external
+users.
+
+Exit criteria:
+- beta cohort defined
+- onboarding flow documented
+- feedback collection path ready
 ```
 
-Every plan file must include a title heading, an `Updated:` line, and sections for `## Now`, `## Next`, and `## Blocked`. Keep plans under 100 lines each.
+That level of specificity is what turns an epic into an operating model rather
+than a folder with nice filenames.
 
-When `## Now` is empty, the agent should log completion and create the next plan (or propose marking the epic complete).
+## Step 4: Attach the right supporting material to each phase
 
-## Step 4: Add structured state
+An epic gets much stronger when each phase has the support it actually needs.
 
-`state.json` holds machine-readable facts that complement the human-readable plan:
+Common supports:
+
+- `references/` for durable source material
+- `skills/` for epic-scoped helper skills
+- `scripts/` for deterministic checks or data collection
+- `runtime/artifacts/` for outputs the epic is expected to produce during a run
 
 ```directory
 saas-launch/
 ├── SKILL.md
 ├── EPIC.md
-├── plans/
-│   └── 001-initial.md
-├── state.json
-└── ...
+├── runtime/
+│   └── artifacts/
+│       ├── launch-briefs/
+│       └── reports/
+├── references/
+│   ├── launch-checklist.md
+│   ├── pricing-notes.md
+│   └── onboarding-requirements.md
+├── skills/
+│   ├── architecture-review/
+│   │   └── SKILL.md
+│   └── beta-feedback-triage/
+│       └── SKILL.md
+├── scripts/
+│   ├── fetch_metrics.py
+│   └── validate_release_readiness.sh
 ```
 
-```json
-{
-  "state_version": 1,
-  "status": "active",
-  "current_plan": "001-initial.md",
-  "milestone": "M1",
-  "progress": 0.1,
-  "blocked": false
-}
-```
+Think in phase terms:
 
-Three fields are reserved by the spec:
+- architecture phase may need `references/architecture-principles.md` and a
+  helper skill for tradeoff analysis
+- beta phase may need a script to fetch metrics and a skill for feedback triage
+- launch phase may need checklists, release scripts, and artifact output paths
 
-| Field | Purpose |
-|-------|---------|
-| `state_version` | Schema version (defaults to `1` if absent) |
-| `status` | Must be `active`, `paused`, `complete`, or `abandoned` |
-| `current_plan` | Filename of the active plan in `plans/` |
+Do not dump everything into the epic at once. Add the supports that materially
+improve the workflow definition.
 
-All other fields are epic-defined. Add whatever structured data your workflow needs.
+## Step 5: Decide what is reusable and what is instance-specific
 
-<Note>
-If `state.json` becomes unwieldy, switch to a `state/` directory with `state/core.json` for reserved fields and additional files for domain-specific state. Tooling checks `state/core.json` first.
-</Note>
+This is the central authoring question.
 
-## Step 5: Add the log
+For a **workflow epic**, the reusable part is the method:
 
-`log/` provides append-only history. Each entry is a markdown file with a timestamped filename:
+- phases
+- policies
+- references
+- helper skills
+- scripts
+- success model
 
-```directory
-saas-launch/
-├── SKILL.md
-├── EPIC.md
-├── plans/
-│   └── 001-initial.md
-├── state.json
-└── log/
-    └── 2026-03-06T10-00-00Z-agent-initial-setup.md
-```
+For an **instance epic**, more of the definition is specific to one project:
 
-```markdown
----
-actor: agent
-type: work
-epic: saas-launch
-duration_minutes: 15
----
+- stakeholders
+- deadlines
+- deliverables
+- constraints
 
-## Initial setup
+For a **capability epic**, the reusable part is the installed service model:
 
-Created epic structure with SKILL.md, EPIC.md, initial plan, and state.json.
-Defined four project phases and success criteria.
+- what the capability does
+- when it activates
+- what it can operate on
+- what it must never do
 
-### Changes
-- Created 001-initial.md plan with architecture tasks
-- Set state: milestone = "M1", progress = 0.1
+See [Epic archetypes](/epic-creation/archetypes) for concrete examples of each.
 
-### Next
-- Begin architecture decisions per plan ## Now
-```
+## Step 6: Use this authoring checklist
 
-Filename format: `YYYY-MM-DDTHH-MM-SSZ-{actor}-{slug}.md`
+Before you call the epic “created,” check:
 
-The `actor` field can be `agent`, `human`, `cron`, `hook`, or a specific name. Log entries must never be edited after writing (except to redact secrets).
+- Does `SKILL.md` clearly say when this epic should activate?
+- Does `EPIC.md` clearly define purpose, scope, success, and resume behavior?
+- Are the phases concrete enough that an agent knows what good work looks like?
+- Does each major phase point to the right references, skills, or scripts?
+- Is the reusable operating model clear, or is it muddied with one-off session details?
 
-## What you have now
+If the answer to those questions is yes, you have authored an epic definition.
 
-At this point your epic has everything needed for multi-session stateful work:
+## What comes next
 
-```directory
-saas-launch/
-├── SKILL.md          # Routing and instructions
-├── EPIC.md           # Workflow definition and identity
-├── plans/            # What to do now
-│   └── 001-initial.md
-├── state.json        # Machine-readable facts
-└── log/              # What happened
-    └── 2026-03-06T10-00-00Z-agent-initial-setup.md
-```
+Once the epic exists, you can start **using** it:
 
-An agent resuming this epic will:
-1. Read `SKILL.md` for instructions
-2. Read `EPIC.md` for workflow context
-3. Read `state.json` for current status
-4. Read `001-initial.md` (the current plan) for what to do
-5. Read recent log entries for session continuity
+- add `plans/` when the epic needs a tactical working loop
+- add `state.json` or `state/` when the epic needs machine-readable facts
+- add `log/` when continuity across sessions matters
+- add `hooks/`, `cron.d/`, and `policy.yml` when the epic becomes an operating surface
 
-## Going further
+That is the next layer, and it belongs on a separate page.
 
-From here, you can add more capabilities as needed:
+Next:
 
-- **`ROADMAP.md`** for long-term milestones and strategic direction
-- **`DECISIONS.md`** for a curated record of key decisions
-- **`hooks/`** for event-triggered automation (see the runtime spec)
-- **`cron.d/`** for recurring tasks like daily metric checks
-- **`policy.yml`** for autonomous operation constraints
-- **`skills/`** for epic-scoped sub-skills
-- **`artifacts/`** for produced outputs and deliverables
-
-See the [full specification](/epic-specification) for details on each component, or explore [epic archetypes](/epic-creation/archetypes) for patterns tailored to different use cases.
+- [Read Epic Usage](/epic-usage) for plans, state, logs, and runtime evolution.
+- [Read Epic archetypes](/epic-creation/archetypes) for workflow, instance, and capability patterns.
+- [Read the core specification](/epic-specification) for file semantics.

@@ -18,37 +18,45 @@
     "pages": [
       "home",
       {
-        "group": "Skills",
-        "pages": [
-          "what-are-skills",
-          "specification",
-          {
-            "group": "For skill creators",
-            "pages": [
-              "skill-creation/evaluating-skills",
-              "skill-creation/using-scripts"
-            ]
-          },
-          {
-            "group": "For client implementors",
-            "pages": [
-              "client-implementation/adding-skills-support"
-            ]
-          }
-        ]
-      },
-      {
         "group": "Epics",
         "pages": [
           "what-are-epics",
-          "epic-specification",
+          "stateful-and-reusable",
+          "specification",
           {
-            "group": "For epic creators",
+            "group": "Create and use epics",
             "pages": [
               "epic-creation/getting-started",
-              "epic-creation/archetypes"
+              "epic-creation/worked-example",
+              "epic-usage",
+              "epic-creation/archetypes",
+              {
+                "group": "For epic authors",
+                "pages": [
+                  "epic-creation/create-epic-skill",
+                  "epic-creation/evaluating-epics",
+                  "epic-creation/using-scripts"
+                ]
+              }
             ]
-          }
+          },
+          "epic-specification",
+          "epic-runtime",
+          "epic-examples",
+          "epic-migration-0-5-1"
+        ]
+      },
+      {
+        "group": "Integration",
+        "pages": [
+          "client-implementation/add-epics-support"
+        ]
+      },
+      {
+        "group": "SKILL.md compatibility",
+        "pages": [
+          "what-are-skills",
+          "skill-specification"
         ]
       }
     ]
@@ -68,7 +76,19 @@
   "redirects": [
     {
       "source": "/integrate-skills",
-      "destination": "/client-implementation/adding-skills-support"
+      "destination": "/client-implementation/add-epics-support"
+    },
+    {
+      "source": "/client-implementation/adding-skills-support",
+      "destination": "/client-implementation/add-epics-support"
+    },
+    {
+      "source": "/skill-creation/evaluating-skills",
+      "destination": "/epic-creation/evaluating-epics"
+    },
+    {
+      "source": "/skill-creation/using-scripts",
+      "destination": "/epic-creation/using-scripts"
     }
   ]
 }

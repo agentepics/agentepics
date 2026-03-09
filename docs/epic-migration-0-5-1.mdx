@@ -1,0 +1,151 @@
+---
+title: "Migrating from 0.5.0 to 0.5.1"
+sidebarTitle: "Migrate 0.5.1"
+description: "Upgrade Agent Epics from 0.5.0 to 0.5.1 by moving live state into runtime/."
+---
+
+This guide covers the `0.5.0` to `0.5.1` filesystem change.
+
+In `0.5.1`, the live run of an epic moves under `runtime/`. The top level stays
+as the reusable definition. That means:
+
+- top level = template, identity, automation config, and reusable support files
+- `runtime/` = current plans, state, logs, decisions, roadmap, and artifacts
+- clearing `runtime/` = reset to template or start a fresh run
+
+## Before and after
+
+### `0.5.0`
+
+```text
+my-epic/
+├── SKILL.md
+├── EPIC.md
+├── plans/
+├── state.json
+├── log/
+├── ROADMAP.md
+├── DECISIONS.md
+├── hooks/
+├── cron.d/
+├── policy.yml
+└── artifacts/
+```
+
+### `0.5.1`
+
+```text
+my-epic/
+├── SKILL.md
+├── EPIC.md
+├── runtime/
+│   ├── plans/
+│   ├── state.json
+│   ├── log/
+│   ├── ROADMAP.md
+│   ├── DECISIONS.md
+│   └── artifacts/
+├── hooks/
+├── cron.d/
+└── policy.yml
+```
+
+## For execution hosts
+
+### What changes
+
+Hosts implementing `0.5.1` should treat `runtime/` as the authoritative live
+state tree for the current run.
+
+Path mapping:
+
+- `plans/` -> `runtime/plans/`
+- `state.json` -> `runtime/state.json`
+- `state/core.json` -> `runtime/state/core.json`
+- `log/` -> `runtime/log/`
+- `ROADMAP.md` -> `runtime/ROADMAP.md`
+- `DECISIONS.md` -> `runtime/DECISIONS.md`
+- `artifacts/` -> `runtime/artifacts/`
+
+### Required behavior changes
+
+Update activation and resumption logic to:
+
+1. Read `SKILL.md`, `EPIC.md`, and `policy.yml`
+2. Read `runtime/state/core.json` or `runtime/state.json`
+3. Read the current plan from `runtime/plans/`
+4. Read recent entries from `runtime/log/`
+
+Treat a missing or empty `runtime/` as a fresh template or unstarted instance.
+Do not treat that as an error.
+
+### Compatibility strategy
+
+If you want to support both versions during migration:
+
+- use `EPIC.md.spec_version` to decide which layout to read
+- keep `0.5.0` path handling isolated from `0.5.1` path handling
+- avoid hybrid precedence rules inside one spec version
+
+The `0.5.1` runtime spec no longer standardizes host-private retry, dedupe, or
+lock storage. Hosts remain responsible for safe execution behavior, and hooks
+should be treated as idempotent-friendly.
+
+## For epic authors
+
+### What moves
+
+Move only live run state into `runtime/`.
+
+Move:
+
+- `plans/`
+- `state.json` or `state/`
+- `log/`
+- `ROADMAP.md`
+- `DECISIONS.md`
+- `artifacts/`
+
+Keep top-level:
+
+- `SKILL.md`
+- `EPIC.md`
+- `hooks/`
+- `cron.d/`
+- `policy.yml`
+- `skills/`
+- `scripts/`
+- `references/`
+- `assets/`
+
+### Upgrade steps
+
+1. Set `EPIC.md.spec_version` to `0.5.1`
+2. Create `runtime/` if it does not exist
+3. Move existing live state files and folders into `runtime/`
+4. Update any references in plans, scripts, hooks, and docs that still point to old top-level paths
+5. Validate that the epic resumes from `runtime/state*`, `runtime/plans/`, and `runtime/log/`
+
+### Resetting to template state
+
+For reusable workflow epics, starting a fresh run is now simple:
+
+1. Keep `SKILL.md`, `EPIC.md`, `hooks/`, `cron.d/`, `policy.yml`, and other reusable top-level files
+2. Clear `runtime/`
+3. Let the next run recreate `runtime/` lazily as work begins
+
+For instance epics and capability epics, you will usually keep `runtime/`
+intact because it represents the long-lived working memory of that epic.
+
+### Author checklist
+
+- `EPIC.md` says `spec_version: 0.5.1`
+- all live paths in prose and examples point to `runtime/...`
+- hooks and cron jobs refer to `runtime/ROADMAP.md`, `runtime/state*`, and `runtime/plans/` where needed
+- no top-level `plans/`, `state*`, `log/`, `ROADMAP.md`, `DECISIONS.md`, or `artifacts/` remain in a `0.5.1` epic
+
+## Notes
+
+- This is a substantial layout change even though it is published as `0.5.1`
+- The host-facing safety rule is simple: hooks should be idempotent
+- The author-facing ergonomics rule is simple: clear `runtime/` to start fresh

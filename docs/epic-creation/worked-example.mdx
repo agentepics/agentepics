@@ -1,0 +1,297 @@
+---
+title: "Worked example"
+sidebarTitle: "Worked example"
+description: "A concrete end-to-end example of a reusable website epic and the state an agent materializes while using it."
+---
+
+This page shows one epic all the way through:
+
+- the reusable definition a human author creates
+- the support files attached to each phase
+- the working state an agent later materializes during real use
+
+The example is a **website relaunch epic** for shipping a marketing website.
+That makes the EPIC model concrete because a plain skill quickly falls short:
+the work spans discovery, messaging, design, implementation, QA, launch, and
+post-launch monitoring, and the same operating model is useful for the next
+site relaunch too.
+
+## The reusable epic definition
+
+The author starts by defining the stable workflow, not a one-off session.
+
+```directory
+website-relaunch/
+├── SKILL.md
+├── EPIC.md
+├── references/
+│   ├── brand-voice.md
+│   ├── analytics-baseline.md
+│   └── launch-checklist.md
+├── skills/
+│   ├── homepage-copy-review/
+│   │   └── SKILL.md
+│   └── conversion-audit/
+│       └── SKILL.md
+├── scripts/
+│   ├── capture-pageshots.sh
+│   └── lighthouse-check.mjs
+```
+
+### `SKILL.md`
+
+`SKILL.md` tells the agent when this epic should activate.
+
+```mdx
+---
+name: website-relaunch
+description: >
+  Reusable workflow for redesigning and relaunching a marketing website.
+  Activate when planning or executing a website refresh, homepage rewrite,
+  information architecture change, launch checklist, or post-launch QA cycle.
+---
+
+# Website relaunch
+
+## When to activate
+Use this epic when the work concerns a public-facing website relaunch.
+
+## What it helps with
+- discovery and page inventory
+- messaging and information architecture
+- design and implementation handoff
+- launch readiness and post-launch checks
+```
+
+### `EPIC.md`
+
+`EPIC.md` holds the durable operating definition.
+
+```mdx
+---
+spec_version: 0.5.1
+id: website-relaunch
+tags: [website, marketing, launch]
+timezone: UTC
+---
+
+# Website relaunch
+
+## Purpose
+Ship a clearer, faster, higher-converting website without losing continuity
+across strategy, content, design, implementation, QA, and launch.
+
+## Phases
+
+### 1. Discovery and diagnosis
+Audit the current site, analytics baseline, content gaps, and stakeholder goals.
+Use `references/analytics-baseline.md` and produce a short relaunch brief in
+`runtime/artifacts/briefs/`.
+
+Exit criteria:
+- current site inventory captured
+- baseline metrics recorded
+- top relaunch goals agreed
+
+### 2. Messaging and structure
+Rewrite positioning, define the homepage story, and reorganize navigation.
+Use `skills/homepage-copy-review/` and `references/brand-voice.md`.
+
+Exit criteria:
+- homepage narrative approved
+- page hierarchy agreed
+- critical missing content identified
+
+### 3. Build and QA
+Implement the new pages, run page screenshots and Lighthouse checks, and keep
+release blockers visible in the current plan.
+
+Exit criteria:
+- target pages implemented
+- QA evidence saved in `runtime/artifacts/qa/`
+- launch blockers either resolved or explicitly tracked
+
+### 4. Launch and stabilization
+Launch the site, monitor metrics, and compare early signals against the
+baseline.
+
+Exit criteria:
+- site launched
+- early analytics snapshot captured
+- follow-up fixes triaged
+
+## Resume
+Read the current plan in `runtime/plans/`, `runtime/state/core.json`, the
+latest launch decisions in `runtime/DECISIONS.md`, and the 3-5 most recent
+entries in `runtime/log/` before acting.
+```
+
+This definition is reusable. The next website relaunch keeps the same phases,
+references, helper skills, and scripts while getting fresh working state.
+
+## What the agent materializes during usage
+
+When a specific relaunch starts, the agent creates working files around the
+stable definition.
+
+```directory
+website-relaunch/
+├── SKILL.md
+├── EPIC.md
+└── runtime/
+    ├── plans/
+    │   ├── 001-discovery.md
+    │   └── 002-homepage-rewrite.md
+    ├── state/
+    │   ├── core.json
+    │   └── metrics.json
+    ├── log/
+    │   ├── 2026-03-06T09-00-00Z-agent-started-discovery.md
+    │   └── 2026-03-08T14-20-00Z-agent-homepage-draft-ready.md
+    ├── DECISIONS.md
+    ├── ROADMAP.md
+    └── artifacts/
+        ├── briefs/current-relaunch-brief.md
+        ├── copy/homepage-v2.md
+        └── qa/lighthouse-homepage.json
+```
+
+### Current plan
+
+The plan is not part of the reusable definition. It is created for this run.
+
+```markdown
+# Homepage rewrite plan
+
+Updated: 2026-03-08T14:20:00Z
+
+## Now
+- Incorporate stakeholder feedback into headline and proof section
+- Confirm final navigation labels with product marketing
+- Run `node scripts/lighthouse-check.mjs homepage`
+
+## Next
+- Stage the homepage build in the preview environment
+- Capture fresh screenshots with `bash scripts/capture-pageshots.sh`
+- Prepare launch review notes in `runtime/artifacts/briefs/launch-review.md`
+
+## Blocked
+- Final customer logo permissions pending from legal
+```
+
+### Structured state
+
+`runtime/state/core.json` keeps the machine-readable picture of the current run.
+
+```json
+{
+  "state_version": 1,
+  "status": "active",
+  "current_plan": "002-homepage-rewrite.md",
+  "phase": "messaging-and-structure",
+  "site_name": "Northstar",
+  "launch_target": "2026-03-21T09:00:00Z",
+  "blocked": true,
+  "blockers": [
+    "Customer logo permissions pending from legal"
+  ],
+  "artifacts": {
+    "homepage_copy": "runtime/artifacts/copy/homepage-v2.md",
+    "relaunch_brief": "runtime/artifacts/briefs/current-relaunch-brief.md"
+  }
+}
+```
+
+### Log entries
+
+Logs preserve continuity across sessions and collaborators.
+
+```markdown
+---
+actor: agent
+type: work
+epic: website-relaunch
+---
+
+## Homepage draft prepared
+
+Updated the homepage draft in `runtime/artifacts/copy/homepage-v2.md`.
+The new structure sharpens the proof section and reduces hero copy from
+three competing messages to one clear promise.
+
+### Changes
+- rewrote headline and subhead
+- moved customer proof above feature grid
+- updated `runtime/state/core.json` phase status
+
+### Next
+- incorporate stakeholder comments
+- run Lighthouse and screenshot scripts
+```
+
+### Strategic state
+
+`runtime/ROADMAP.md` and `runtime/DECISIONS.md` capture information that should outlive a
+single session but not necessarily the whole reusable definition.
+
+```markdown
+# Decisions
+
+### D3: Lead with outcomes, not platform features
+**Date:** 2026-03-08
+**Context:** Discovery showed homepage visitors bounced before reaching the
+product explanation.
+**Decision:** Rewrite the homepage around customer outcomes first and move
+platform detail lower on the page.
+**Status:** Accepted
+```
+
+## Optional runtime behavior
+
+The same epic can later gain concurrent operating loops without changing its
+core definition.
+
+```directory
+website-relaunch/
+├── cron.d/
+│   └── daily-launch-readiness.yml
+├── hooks/
+│   └── meeting-started.d/
+│       └── 010-prepare-review-brief.md
+└── policy.yml
+```
+
+For this website epic, that can mean:
+
+- a daily `cron.d/` job that checks launch blockers and refreshes metrics
+- a `meeting-started` hook that prepares a short website review brief before
+  the weekly launch meeting
+- a `policy.yml` file that allows screenshots and QA checks but forbids direct
+  production changes without approval
+
+The human author does not manually maintain these operational files session by
+session. The agent creates and updates them as the epic is used.
+
+## Why this beats a plain skill
+
+A plain skill could describe how to redesign a website, but it would still fall
+short on the parts that matter in real work:
+
+- it would not keep the current homepage draft, blockers, and target date in a
+  durable shared state container
+- it would not preserve decisions and recent activity across sessions
+- it would not give the next session an authoritative current plan
+- it would not make the same reusable workflow easy to run again for the next
+  site relaunch with fresh working state
+- it would not naturally support recurring launch checks or event-driven
+  meeting preparation
+
+That is the EPIC difference: the workflow stays reusable, and the working state
+accumulates around it as the agent operates.
+
+## Where to go next
+
+- [Read Epic creation](/epic-creation/getting-started) for how to author the reusable definition
+- [Read Epic usage](/epic-usage) for what the agent will create over time
+- [Read Epic archetypes](/epic-creation/archetypes) for workflow, instance, and capability patterns
+- [Read Epic examples](/epic-examples) for more compact patterns and file snippets

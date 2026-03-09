@@ -1,0 +1,260 @@
+---
+title: "How to add EPIC support to your coding agent harness"
+sidebarTitle: "Add EPIC support"
+description: "Implement Agent Epics in a coding AI harness: discover epics, disclose them to the model, load the right operating files, and support runtime behavior safely."
+---
+
+This guide is for builders of coding AI agents and harnesses.
+
+It describes what your system must do to support Agent Epics well: discover
+epics in the workspace, tell the model about them, load the right files at the
+right time, let the agent maintain operating state, and either execute runtime
+features correctly or surface that they are unsupported.
+
+**Prerequisites**:
+
+- [Epic Reference](/specification)
+- [Epic Specification](/epic-specification)
+- [Epic Runtime](/epic-runtime)
+- [SKILL.md Reference](/skill-specification)
+
+## What EPIC support means
+
+Supporting epics is more than discovering `SKILL.md`.
+
+An EPIC-aware harness should be able to:
+
+- discover packages that contain both `SKILL.md` and `EPIC.md`
+- disclose available epics to the model without eagerly loading all content
+- activate an epic by loading its durable operating definition
+- resume work by loading plans, structured state, and recent logs
+- let the agent create and update operational files inside the epic
+- honor runtime features such as `hooks/`, `cron.d/`, and `policy.yml`, or explicitly say they are unsupported
+
+For a coding agent, this usually means treating an epic as a long-lived working
+surface inside the repo or user workspace, not as a one-shot prompt asset.
+
+## Step 1: Discover epics
+
+At session startup, scan your configured skill locations for directories that
+contain:
+
+- `SKILL.md`
+- `EPIC.md`
+
+These are epics.
+
+If you also support plain skills, treat them as a separate discovery class:
+
+- `SKILL.md` only => plain skill
+- `SKILL.md` + `EPIC.md` => epic
+
+Typical scan locations for a coding harness:
+
+| Scope | Path |
+|-------|------|
+| Project | `<repo>/.agents/skills/` |
+| Project | `<repo>/.<your-client>/skills/` |
+| User | `~/.agents/skills/` |
+| User | `~/.<your-client>/skills/` |
+
+You may also support bundled epics or org-managed epic registries, but the core
+filesystem behavior should still work.
+
+## Step 2: Build an epic catalog for the model
+
+At startup, disclose only the lightweight metadata the model needs to know what
+epics exist.
+
+At minimum, each epic record should include:
+
+| Field | Purpose |
+|-------|---------|
+| `name` | Activation label from `SKILL.md` |
+| `description` | Discovery description from `SKILL.md` |
+| `location` | Path to `SKILL.md` or epic root |
+| `epic_id` | Durable identifier from `EPIC.md` |
+
+Optional but useful:
+
+| Field | Purpose |
+|-------|---------|
+| `runtime_features` | Whether `hooks/`, `cron.d/`, or `policy.yml` exist |
+| `status` | Current lifecycle state if known from structured state |
+| `current_plan` | Current plan filename if known |
+
+Example:
+
+```xml
+<available_epics>
+  <epic>
+    <name>saas-launch</name>
+    <description>Workflow for launching a SaaS product.</description>
+    <epic_id>saas-launch</epic_id>
+    <location>/workspace/.agents/skills/saas-launch</location>
+  </epic>
+</available_epics>
+```
+
+The model should see this catalog at session start so it knows which durable
+systems are available in the workspace.
+
+## Step 3: Activate the epic with progressive disclosure
+
+When the model or user activates an epic, do not dump the entire directory into
+context. Load it in layers.
+
+Recommended activation sequence:
+
+1. `SKILL.md`
+2. `EPIC.md`
+3. `policy.yml` if present
+4. `runtime/state/core.json` when present, otherwise `runtime/state.json`
+5. the current plan in `runtime/plans/` when known
+6. the 3-5 most recent entries in `runtime/log/`
+
+Defer these until needed:
+
+- `runtime/ROADMAP.md`
+- `runtime/DECISIONS.md`
+- older logs
+- `references/`
+- `skills/`
+- `scripts/`
+- `runtime/artifacts/`
+
+That keeps the token cost under control while still letting the model resume the
+epic as an operating surface.
+
+## Step 4: Let the agent maintain epic state
+
+Once activated, the agent should be able to create and update live operating
+files in `runtime/`.
+
+In practice, that means your harness should allow the model to:
+
+- create plans in `runtime/plans/`
+- update `runtime/state.json` or files under `runtime/state/`
+- append log entries in `runtime/log/`
+- produce outputs in `runtime/artifacts/`
+- read and update related references inside the epic when appropriate
+
+This is a core EPIC difference from plain skills. During usage, the agent is not
+just reading instructions. It is evolving the live operating state of the epic.
+
+Your harness should preserve these writes as first-class workspace changes, not
+as ephemeral scratch state.
+
+## Step 5: Resume epics correctly
+
+When an epic is resumed in a later session, the harness should make it cheap for
+the model to recover the current operating picture.
+
+Minimum resume context:
+
+- `EPIC.md`
+- authoritative structured state
+- current plan
+- recent logs
+
+Good additional context when relevant:
+
+- `runtime/ROADMAP.md`
+- `runtime/DECISIONS.md`
+- specific artifacts referenced by the plan
+
+If the model can read files directly, you can let it fetch these on demand. If
+you provide a dedicated activation tool, that tool should return enough context
+for immediate resumption.
+
+## Step 6: Treat runtime as executor behavior
+
+If your harness supports runtime features, it must treat them as executable
+semantics, not advisory prose.
+
+That means:
+
+- `policy.yml` is loaded and treated as a hard constraint
+- `cron.d/` jobs are scheduled and invoked according to spec
+- `hooks/` fire on supported trigger events
+- unsupported runtime features are surfaced explicitly, not silently ignored
+
+For a coding AI harness, runtime triggers often map to events such as:
+
+- epic installation
+- plan completion
+- milestone completion
+- becoming blocked
+- scheduled checks
+- custom harness events such as a meeting starting
+
+If your product does not support runtime yet, say so clearly and still support
+the non-runtime epic surface well.
+
+## Step 7: Expose the right tool surface
+
+A coding AI harness usually needs these capabilities to support epics well:
+
+- directory listing
+- file read
+- file create and edit
+- script execution
+- optional scheduling or webhook/event integration for runtime
+
+If the model does not have direct file access, provide a dedicated epic
+activation tool that:
+
+- takes an epic name or id
+- returns the layered activation context
+- identifies the epic root so relative paths can be resolved correctly
+
+If the model does have file access, the harness still needs to teach it the
+resume sequence and state precedence.
+
+## Step 8: Apply trust and safety boundaries
+
+Project-level epics come from the repo being worked on and may be untrusted.
+
+For safety, consider:
+
+- gating project epic activation on repo trust
+- surfacing runtime support limitations explicitly
+- requiring confirmation before enabling external side effects
+- preventing untrusted epics from silently escalating into background automation
+
+This matters more for epics than plain skills because epics can carry durable
+state and runtime behavior, not just instructions.
+
+## Support tiers
+
+You do not need full runtime on day one.
+
+Reasonable implementation tiers:
+
+| Tier | What you support |
+|------|------------------|
+| Discovery | Epic discovery plus activation of `SKILL.md` and `EPIC.md` |
+| Resumable | Discovery plus plans, state, and logs |
+| Full EPIC | Resumable support plus `policy.yml`, `hooks/`, and `cron.d/` |
+
+If you only support the first two tiers, document that clearly.
+
+## Harness checklist
+
+- Detect epics by the presence of both `SKILL.md` and `EPIC.md`
+- Disclose epics to the model with a compact catalog
+- Activate epics with layered loading, not eager directory dumps
+- Respect `runtime/state/core.json` over `runtime/state.json`
+- Let the agent create and update plans, state, logs, and artifacts
+- Resume from authoritative state plus current plan and recent logs
+- Treat runtime features as executable semantics or surface them as unsupported
+
+If you need to migrate an existing implementation, see
+[Migrating from 0.5.0 to 0.5.1](/epic-migration-0-5-1).
+
+## Next steps
+
+- [Read the Epic Reference](/specification)
+- [Read the Epic Specification](/epic-specification)
+- [Read the Runtime specification](/epic-runtime)
+- [Read the SKILL.md Reference](/skill-specification)
