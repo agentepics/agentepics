@@ -19,7 +19,7 @@ The skill creates a full epic directory:
 
 ```directory
 {name}/
-├── SKILL.md              # Routing and activation instructions
+├── SKILL.md              # Short skill surface plus Agent Epics footer
 ├── EPIC.md               # Workflow definition with YAML frontmatter
 ├── runtime/
 │   ├── state.json        # Initial structured state
@@ -36,7 +36,7 @@ The skill creates a full epic directory:
 └── policy.yml            # Autonomy constraints
 ```
 
-Every generated file follows the [EPIC specification v0.5.1](/epic-specification)
+Every generated file follows the [EPIC specification v0.5.2](/epic-specification)
 and is populated with content specific to your epic — no generic placeholder text.
 
 ## The operating loop
@@ -88,9 +88,10 @@ The validator runs checks across eleven categories:
 1. **Name format** — lowercase letters, digits, hyphens only; no consecutive
    hyphens; 64-character limit.
 2. **Required files** — `SKILL.md` and `EPIC.md` must exist.
-3. **SKILL.md structure** — must have Purpose, Operating loop, and Rules
-   sections; should reference `runtime/state.json` and `runtime/log/`.
-4. **EPIC.md frontmatter** — must have `spec_version: 0.5.1` and an `id` that
+3. **SKILL.md structure** — must have standard skill frontmatter, must mention
+   `EPIC.md` as the durable context, and for `0.5.2` must include the canonical
+   `## Agent Epics` footer marker.
+4. **EPIC.md frontmatter** — must have `spec_version: 0.5.2` and an `id` that
    matches the directory name.
 5. **EPIC.md body** — must have Objective, Phases, Success criteria, State to
    preserve, Guardrails, and Resume sections.
@@ -106,7 +107,8 @@ The validator runs checks across eleven categories:
     `run` fields; schedule must be a valid 5-field cron expression.
 11. **Cross-file consistency** — `current_plan` in `runtime/state.json` must point
     to an existing file in `runtime/plans/`; state references should be
-    consistent between `EPIC.md` and `SKILL.md`.
+    consistent between `EPIC.md` and `SKILL.md`, and `SKILL.md` should preserve
+    the canonical footer block.
 
 ### Running the validator standalone
 

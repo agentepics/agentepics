@@ -1,0 +1,113 @@
+---
+title: "Migrating from 0.5.1 to 0.5.2"
+sidebarTitle: "Migrate 0.5.2"
+description: "Upgrade Agent Epics to the v0.5.2 dual-purpose SKILL.md contract."
+---
+
+This guide covers the `0.5.1` to `0.5.2` packaging change.
+
+In `0.5.2`, `SKILL.md` becomes a dual-purpose entrypoint:
+
+- the top of the file remains the normal skill discovery and activation surface
+- the bottom of the file adds a standardized `## Agent Epics` footer
+- `EPIC.md` remains authoritative for lifecycle, state model, guardrails, and resume behavior
+
+The `runtime/` layout from `0.5.1` does not move in `0.5.2`.
+
+## For epic authors
+
+### What changes
+
+Keep `SKILL.md` short and activation-cheap, but split it into two sections:
+
+1. A standard skill surface with normal `SKILL.md` frontmatter (`name`,
+   `description`, and any optional standard skill fields).
+2. A canonical `## Agent Epics` footer with the marker:
+
+```html
+<!-- epics-canonical-footer: https://github.com/agentepics/agentepics/blob/v0.5.2/footer.md -->
+```
+
+The top section should:
+
+- say what the epic does
+- say when to activate it
+- say that durable operating context lives in `EPIC.md`
+- include a one-line pointer near the top such as `See ## Agent Epics below if this is your first encounter with the Agent Epics system.`
+
+The top section should not duplicate `EPIC.md`. Resume detail, lifecycle,
+state rules, and guardrails stay authoritative in `EPIC.md` and `runtime/`.
+
+### Upgrade steps
+
+1. Set `EPIC.md.spec_version` to `0.5.2`.
+2. Add standard skill frontmatter to `SKILL.md` if it is missing.
+3. Replace long self-contained resume prose in `SKILL.md` with a short
+   activation-oriented top section that points to `EPIC.md`.
+4. Append the canonical footer from [`footer.md`](https://github.com/agentepics/agentepics/blob/v0.5.2/footer.md).
+5. Keep all live plans, state, logs, roadmap, decisions, and artifacts under
+   `runtime/` exactly as in `0.5.1`.
+6. Validate the package and refresh stale footers through tooling rather than
+   by forking the footer text by hand.
+
+### Author checklist
+
+- `EPIC.md` says `spec_version: 0.5.2`
+- `SKILL.md` starts with standard skill frontmatter
+- `SKILL.md` mentions that durable context lives in `EPIC.md`
+- `SKILL.md` includes the canonical `## Agent Epics` footer and marker
+- runtime behavior still lives in `EPIC.md`, `runtime/`, `hooks/`, `cron.d/`,
+  and `policy.yml`, not in duplicated `SKILL.md` prose
+
+## For host coders
+
+### What changes
+
+Hosts should treat `0.5.2` as:
+
+- the same `runtime/` filesystem layout as `0.5.1`
+- a stricter `SKILL.md` contract for authored epics
+- a portable footer that hosts may parse, preserve, diff, and project into
+  host-native integration surfaces
+
+The footer is not a replacement for `EPIC.md`. It is a compact bridge for
+discovery, orientation, and capability fallback.
+
+### Required behavior changes
+
+Update activation and resumption logic to:
+
+1. Read `SKILL.md` frontmatter as ordinary skill metadata.
+2. Read the short operational top section of `SKILL.md`.
+3. Preserve and understand the canonical `## Agent Epics` footer when present.
+4. Continue with `EPIC.md`, `runtime/state*`, `runtime/plans/`, and
+   `runtime/log/` as the authoritative resumption sequence.
+5. If the host lacks epic support, surface the canonical installer or
+   integration path (`https://epics.sh`) but do not auto-install on behalf of a
+   repo-local epic unless trust policy explicitly allows it.
+
+### Compatibility strategy
+
+During migration:
+
+- treat `0.5.1` epics as valid footer-less epics
+- treat `0.5.2` epics as requiring the canonical footer when you validate or
+  scaffold authored packages
+- ignore unknown future footer details you do not understand unless they change
+  execution semantics in a way you cannot safely support
+- preserve the footer block exactly when copying, installing, exporting, or
+  rewriting `SKILL.md`
+
+### Host checklist
+
+- `runtime/` handling stays identical to `0.5.1`
+- `SKILL.md` frontmatter remains the skill discovery surface
+- `## Agent Epics` is parsed opportunistically and preserved exactly
+- `EPIC.md` remains the authoritative lifecycle and state document
+- hosts do not silently self-bootstrap runtime support from untrusted repo-local epics
+
+## Notes
+
+- `0.5.2` is a compatibility and packaging revision, not a runtime-tree move
+- the canonical footer is versioned so tooling can detect stale copies
+- authors should refresh the footer through tooling when the spec revision changes

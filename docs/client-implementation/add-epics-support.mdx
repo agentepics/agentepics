@@ -126,6 +126,11 @@ Defer these until needed:
 That keeps the token cost under control while still letting the model resume the
 epic as an operating surface.
 
+For `spec_version: 0.5.2`, `SKILL.md` includes a standardized `## Agent Epics`
+footer pinned by a canonical marker. Hosts should preserve that block exactly,
+may parse it for lightweight orientation or staleness checks, and should still
+treat `EPIC.md` plus `runtime/` as the authoritative resume surface.
+
 ## Step 4: Let the agent maintain epic state
 
 Once activated, the agent should be able to create and update live operating
@@ -248,9 +253,11 @@ If you only support the first two tiers, document that clearly.
 - Let the agent create and update plans, state, logs, and artifacts
 - Resume from authoritative state plus current plan and recent logs
 - Treat runtime features as executable semantics or surface them as unsupported
+- Preserve the canonical `## Agent Epics` footer in `0.5.2` epics and stay backward-compatible with footer-less `0.5.1` epics
 
 If you need to migrate an existing implementation, see
-[Migrating from 0.5.0 to 0.5.1](/epic-migration-0-5-1).
+[Migrating from 0.5.0 to 0.5.1](/epic-migration-0-5-1) and
+[Migrating from 0.5.1 to 0.5.2](/epic-migration-0-5-2).
 
 ## Next steps
 

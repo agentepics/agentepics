@@ -3,7 +3,7 @@ title: "Epic Specification"
 description: "The complete format specification for Agent Epics."
 ---
 
-**Version 0.5.1**
+**Version 0.5.2**
 
 This page defines the portable, repo-tracked core of an epic: identity,
 authoritative files, resumption, mutable state, and compatibility rules.
@@ -26,8 +26,10 @@ trigger names are normative across the full EPIC specification.
 
 The EPIC standard describes durable agent workflows and capabilities that an
 AI agent (or human-AI pair) can resume, reuse, automate, or keep installed
-over time. Every epic is still a skill: `SKILL.md` handles routing and
-instructions, and `EPIC.md` adds stateful operating context.
+over time. Every epic is still a skill: the top of `SKILL.md` handles routing
+and activation, the standardized `## Agent Epics` footer gives a portable
+gateway into the wider epic system, and `EPIC.md` adds stateful operating
+context.
 
 An epic is not defined by how long it takes. It may be a one-off effort that
 needs durable state, a reusable workflow template with fresh working state each
@@ -92,7 +94,7 @@ capability.
 
 ```text
 epic-name/
-├── SKILL.md             (required — routing, triggering, instructions)
+├── SKILL.md             (required — standard skill surface plus Agent Epics footer)
 ├── EPIC.md              (required — workflow definition, identity)
 │
 │   # Live instance state (mutable — written during a run)
@@ -117,9 +119,9 @@ epic-name/
 
 ## What's Required
 
-`SKILL.md` and `EPIC.md` MUST both exist. `SKILL.md` handles routing and
-backward compatibility with skill loaders. `EPIC.md` holds stateful workflow
-context.
+`SKILL.md` and `EPIC.md` MUST both exist. `SKILL.md` is the dual-purpose
+entrypoint for discovery and activation. `EPIC.md` holds the authoritative
+stateful workflow context.
 
 <Tip>
 A two-file epic is valid. The minimum useful stateful epic usually adds `runtime/plans/` and `runtime/log/`.
@@ -164,7 +166,7 @@ If the current plan and the active state file disagree, the plan wins for
 intent and the state file wins for facts. Agents encountering a conflict SHOULD
 log the discrepancy in `runtime/log/` and resolve it.
 
-## SKILL.md — Routing and Instructions
+## SKILL.md — Discovery, Activation, and Gateway
 
 An epic's `SKILL.md` uses the standard SKILL format with no EPIC-specific
 frontmatter additions.
@@ -179,11 +181,32 @@ description: >
 ---
 ```
 
+For `spec_version: 0.5.2`, the `SKILL.md` body is split into two sections:
+
+1. A short operational top section that says what the epic does, when to
+   activate it, and that durable operating context lives in `EPIC.md`.
+2. A standardized footer introduced by `## Agent Epics` and pinned to its
+   canonical source with:
+
+```html
+<!-- epics-canonical-footer: https://github.com/agentepics/agentepics/blob/v0.5.2/footer.md -->
+```
+
+The top section SHOULD stay short and activation-cheap. It MAY include concise
+epic-specific notes, but it MUST NOT try to duplicate `EPIC.md`'s lifecycle,
+state, or resume role. A one-line pointer near the top SHOULD direct first-time
+readers to the footer.
+
+The standardized footer MUST be identical across epics for a given spec
+revision. It identifies the directory as an Agent Epic, gives the compressed
+resumption sequence, branches on whether the host already supports epics, and
+handles the case where `SKILL.md` is seen without the full epic directory.
+
 An epic-aware loader detects an epic by checking whether `EPIC.md` exists in the
 same directory.
 
 <Note>
-The `SKILL.md` body contains stable instructions for how to operate on the epic. If instructions change weekly, they belong in `runtime/plans/`, `scripts/`, `references/`, or structured state instead.
+The `SKILL.md` top section contains stable activation instructions for how to operate on the epic. If instructions change weekly, they belong in `runtime/plans/`, `scripts/`, `references/`, or structured state instead.
 </Note>
 
 ## EPIC.md — Stateful Context
@@ -192,7 +215,7 @@ The `SKILL.md` body contains stable instructions for how to operate on the epic.
 
 ```yaml
 ---
-spec_version: 0.5.1
+spec_version: 0.5.2
 id: saas-launch
 tags: [saas, launch, product]
 timezone: UTC
@@ -228,7 +251,7 @@ Epics extend the skill disclosure model from 3 to 6 levels:
 | Level | What | When loaded | Budget |
 |-------|------|-------------|--------|
 | 1 | `SKILL.md` frontmatter | Always — skill index | ~150 words |
-| 2 | `SKILL.md` body + `EPIC.md` + `policy.yml` when present | When epic activates | &lt;500 lines combined |
+| 2 | `SKILL.md` top section + footer + `EPIC.md` + `policy.yml` when present | When epic activates | &lt;500 lines combined |
 | 3 | `runtime/state.json` or `runtime/state/core.json` + current plan from `runtime/plans/` | Immediately after activation | &lt;150 lines combined |
 | 4 | Recent `runtime/log/` entries (last 3-5) | For session continuity | ~200 lines |
 | 5 | `runtime/ROADMAP.md` + `runtime/DECISIONS.md` | When strategic context is needed | &lt;300 lines |
@@ -241,14 +264,15 @@ index epics using the same mechanism as ordinary skills.
 
 When an agent resumes work on an epic, it SHOULD:
 
-1. Read `SKILL.md` frontmatter and body.
-2. Read `EPIC.md` frontmatter and body, plus `policy.yml` if present.
-3. If `runtime/` is absent or empty, treat the epic as a fresh template or unstarted instance.
-4. Read `runtime/state/core.json` if present; otherwise read `runtime/state.json` if present.
-5. Read the current plan from `runtime/plans/`.
+1. Read `SKILL.md` frontmatter and the short operational top section.
+2. Read `SKILL.md`'s `## Agent Epics` footer if the host or agent needs epic-system orientation.
+3. Read `EPIC.md` frontmatter and body, plus `policy.yml` if present.
+4. If `runtime/` is absent or empty, treat the epic as a fresh template or unstarted instance.
+5. Read `runtime/state/core.json` if present; otherwise read `runtime/state.json` if present.
+6. Read the current plan from `runtime/plans/`.
    Use `runtime/state/core.json.current_plan` or `runtime/state.json.current_plan` when present.
    Otherwise load the most recently modified plan file in `runtime/plans/`.
-6. Read the 3-5 most recent entries from `runtime/log/`.
+7. Read the 3-5 most recent entries from `runtime/log/`.
 
 <Warning>
 Agents SHOULD NOT take action before completing steps 1-5.
@@ -264,6 +288,8 @@ fields defined by this standard.
 
 The normative EPIC validation surface is:
 
+- `SKILL.md` frontmatter
+- the `SKILL.md` `## Agent Epics` footer marker and heading for `spec_version: 0.5.2`
 - `EPIC.md` frontmatter
 - `runtime/state.json` reserved fields
 - `runtime/state/core.json` reserved fields
@@ -281,7 +307,7 @@ The normative EPIC validation surface is:
 - Breaking changes to reserved fields or file semantics MUST increment `spec_version` and document migration behavior.
 - Import/export tooling MUST round-trip reserved fields without silent loss or normalization that changes meaning.
 
-For the `0.5.0` to `0.5.1` filesystem move, see [Migrating from 0.5.0 to 0.5.1](/epic-migration-0-5-1).
+For the `0.5.0` to `0.5.1` filesystem move, see [Migrating from 0.5.0 to 0.5.1](/epic-migration-0-5-1). For the `0.5.1` to `0.5.2` dual-purpose `SKILL.md` change, see [Migrating from 0.5.1 to 0.5.2](/epic-migration-0-5-2).
 
 ### Compliance levels
 
@@ -436,6 +462,7 @@ without silent rewrites.
 EPIC builds on `SKILL.md` as follows:
 
 - `SKILL.md` describes how to do work.
+- in `0.5.2`, `SKILL.md` also carries a standardized `## Agent Epics` footer that points agents into the full epic operating surface
 - `EPIC.md` and `runtime/` describe doing that work over time.
 - Standalone skills are stateless.
 - Epics add lifecycle, memory, and optional runtime behavior.

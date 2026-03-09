@@ -58,10 +58,11 @@ behavior, not just reusable instructions.
 
 Every epic requires:
 
-- `SKILL.md` for discovery and activation
+- `SKILL.md` for discovery, activation, and the Agent Epics gateway footer
 - `EPIC.md` for durable identity and operating definition
 
-`SKILL.md` keeps the package compatible with existing skill loaders.
+`SKILL.md` keeps the package compatible with existing skill loaders and, in
+`0.5.2`, also gives first-contact orientation into the epic system.
 `EPIC.md` is what makes the package an epic.
 
 ## `EPIC.md`
@@ -161,6 +162,7 @@ Every epic is still a valid skill package. That means:
 
 - skill-aware systems can still discover `SKILL.md`
 - epic-aware systems can additionally detect `EPIC.md`
+- `0.5.2` hosts can use the standardized `## Agent Epics` footer as a portable compatibility bridge
 - the surrounding operating files provide durable state, memory, and runtime behavior
 
 If you need the underlying `SKILL.md` compatibility rules, read the
@@ -173,4 +175,5 @@ If you need the underlying `SKILL.md` compatibility rules, read the
 - [Worked example](/epic-creation/worked-example) for one end-to-end reusable website epic
 - [Epic Usage](/epic-usage) for how agents materialize `runtime/` plans, state, logs, and runtime evolution over time
 - [Migrating from 0.5.0 to 0.5.1](/epic-migration-0-5-1) for the filesystem move to `runtime/`
+- [Migrating from 0.5.1 to 0.5.2](/epic-migration-0-5-2) for the dual-purpose `SKILL.md` and canonical footer
 - [How to add EPIC support](/client-implementation/add-epics-support) for harness implementation guidance
