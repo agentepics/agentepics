@@ -1,9 +1,15 @@
 ---
-title: "What are skills?"
-description: "Agent Skills are a lightweight, open format for extending AI agent capabilities with specialized knowledge and workflows."
+title: "SKILL.md compatibility"
+description: "The stateless compatibility layer that Agent Epics builds on."
 ---
 
-At its core, a skill is a folder containing a `SKILL.md` file. This file includes metadata (`name` and `description`, at minimum) and instructions that tell an agent how to perform a specific task. Skills can also bundle scripts, templates, and reference materials.
+Agent Epics builds on the `SKILL.md` format. This page covers that underlying
+stateless packaging layer so you can understand what every epic inherits.
+
+At its core, a skill is a folder containing a `SKILL.md` file. This file
+includes metadata (`name` and `description`, at minimum) and instructions that
+tell an agent how to perform a specific task. Skills can also bundle scripts,
+templates, and reference materials.
 
 ```directory
 my-skill/
@@ -13,7 +19,7 @@ my-skill/
 └── assets/           # Optional: templates, resources
 ```
 
-## How skills work
+## How `SKILL.md` works
 
 Skills use **progressive disclosure** to manage context efficiently:
 
@@ -25,7 +31,7 @@ Skills use **progressive disclosure** to manage context efficiently:
 
 This approach keeps agents fast while giving them access to more context on demand.
 
-## The SKILL.md file
+## The `SKILL.md` file
 
 Every skill starts with a `SKILL.md` file containing YAML frontmatter and Markdown instructions:
 
@@ -64,8 +70,8 @@ This simple format has some key advantages:
 
 ## Next steps
 
-- [View the specification](/specification) to understand the full format.
-- [Add skills support to your agent](/client-implementation/adding-skills-support) to build a compatible client.
+- [Read the SKILL.md reference](/skill-specification) to understand the full format.
+- [Add EPIC support to your coding agent harness](/client-implementation/add-epics-support) to build an epic-aware client.
+- [Read the epic specification](/epic-specification) to see how Epics extend this substrate.
 - [See example skills](https://github.com/anthropics/skills) on GitHub.
-- [Read authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) for writing effective skills.
-- [Use the reference library](https://github.com/agentskills/agentskills/tree/main/skills-ref) to validate skills and generate prompt XML.
+- [Use the reference library](https://github.com/agentepics/agentepics/tree/main/skills-ref) to validate skills and generate prompt XML.

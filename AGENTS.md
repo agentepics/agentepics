@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-Repository guidance for Claude Code.
+Repository guidance for agents working in this repo.
 
 ## Repo
 

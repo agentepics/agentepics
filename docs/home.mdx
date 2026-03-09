@@ -1,34 +1,53 @@
 ---
 title: "Overview"
-description: "A simple, open format for giving agents capabilities, expertise, and stateful workflows."
+description: "A simple, open format for giving agents durable workflows and capabilities."
 ---
 
 import { LogoCarousel } from '/snippets/LogoCarousel.jsx';
 
-Agent Epics extends the Agent Skills standard with stateful, long-running workflows. Skills give agents capabilities. Epics add memory, plans, and lifecycle management.
+Agent Epics is an open format for durable agent systems. It keeps the
+portability of `SKILL.md` and adds the state, planning, policy, and lifecycle
+machinery needed for reusable workflows, autonomous operators, installed
+capabilities, and the durable state containers that hold them over time.
 
-## Skills: Stateless Capabilities
+[Why state and reuse matter](/stateful-and-reusable) shows where a plain skill
+falls short, with concrete website, book, and feature-film examples.
 
-Agent Skills are folders of instructions, scripts, and resources that agents can discover and use to do things more accurately and efficiently. A skill is a `SKILL.md` file with optional supporting files.
+[Worked example](/epic-creation/worked-example) shows one reusable website
+epic from authoring through the plans, state, logs, and artifacts the agent
+creates during use.
 
-## Epics: Skills + State
+## Why Epics
 
-Agent Epics build on skills by adding structured state management. Every epic is a valid skill — `SKILL.md` handles routing and instructions, while `EPIC.md` adds stateful workflow context. Epics enable agents to:
+Every epic is still a valid `SKILL.md` package, but Epics add the pieces that
+plain skills do not have. `SKILL.md` handles routing and instructions, while
+`EPIC.md` and the EPIC file set add durable operating context and durable
+working state. Epics enable agents to:
 
 - **Resume work across sessions** with plans, state, and activity logs
+- **Keep durable state containers** for facts, decisions, milestones, and work
+  that must survive outside the current chat
+- **Package reusable workflows** that can be run again with fresh working state
+- **Install durable capabilities** such as memory, integrations, or monitors
+- **Run several operating loops at once** through plans, recurring jobs,
+  continuous state, and event-driven hooks
 - **Track progress** through structured state and tactical plans
 - **Make decisions** with full context from previous sessions
 - **Operate autonomously** with policy constraints, hooks, and cron jobs
 
-## Adoption
+## Ecosystem foundation
 
-Agent Skills are supported by leading AI development tools.
+Many agent products already understand `SKILL.md`. That compatibility layer
+makes EPIC adoption easier and keeps epics portable across tools.
 
 <LogoCarousel />
 
 ## Open development
 
-The Agent Skills format was originally developed by [Anthropic](https://www.anthropic.com/), released as an open standard, and has been adopted by a growing number of agent products. Agent Epics extends the standard with stateful workflow capabilities. Both are open to contributions from the broader ecosystem.
+`SKILL.md` was originally developed by
+[Anthropic](https://www.anthropic.com/), released as an open format, and
+adopted across a growing set of agent products. Agent Epics builds on that
+substrate and is maintained here by Kindship.ai.
 
 [View on GitHub](https://github.com/agentepics/agentepics)
 
@@ -36,52 +55,80 @@ The Agent Skills format was originally developed by [Anthropic](https://www.anth
 
 <CardGroup cols={3}>
   <Card
-    title="What are skills?"
-    icon="lightbulb"
-    href="/what-are-skills"
-  >
-    Learn about skills, how they work, and why they matter.
-  </Card>
-  <Card
     title="What are epics?"
     icon="layer-group"
     href="/what-are-epics"
   >
-    Learn how epics extend skills with state and lifecycle.
-  </Card>
-  <Card
-    title="Skill Specification"
-    icon="file-code"
-    href="/specification"
-  >
-    The complete format specification for SKILL.md files.
+    Learn how epics extend skills with durable state, autonomy, and installed capabilities.
   </Card>
   <Card
     title="Epic Specification"
     icon="file-lines"
     href="/epic-specification"
   >
-    The complete format specification for EPIC.md files.
+    The core EPIC format specification.
   </Card>
   <Card
-    title="Add skills support"
+    title="Epic Runtime"
+    icon="bolt"
+    href="/epic-runtime"
+  >
+    Hooks, cron, policy, and executor behavior.
+  </Card>
+  <Card
+    title="Worked example"
+    icon="sitemap"
+    href="/epic-creation/worked-example"
+  >
+    Follow one website epic from reusable definition to live plans, state, and logs.
+  </Card>
+  <Card
+    title="Epic Examples"
+    icon="layer-group"
+    href="/epic-examples"
+  >
+    Directory layouts, patterns, and worked examples.
+  </Card>
+  <Card
+    title="Epic creation"
+    icon="rocket"
+    href="/epic-creation/getting-started"
+  >
+    Author the reusable definition, phases, and supporting skills for a new epic.
+  </Card>
+  <Card
+    title="Epic usage"
+    icon="route"
+    href="/epic-usage"
+  >
+    See how agents materialize plans, state, logs, and ongoing operation over time.
+  </Card>
+  <Card
+    title="Epic archetypes"
+    icon="diagram-project"
+    href="/epic-creation/archetypes"
+  >
+    Choose a shape for workflow, instance, or capability epics.
+  </Card>
+  <Card
+    title="Epic reference"
+    icon="book"
+    href="/specification"
+  >
+    Start from the main EPIC reference entry point.
+  </Card>
+  <Card
+    title="Add EPIC support"
     icon="gear"
-    href="/client-implementation/adding-skills-support"
+    href="/client-implementation/add-epics-support"
   >
-    Add skills support to your agent or tool.
+    Implement EPIC support in a coding AI agent harness.
   </Card>
   <Card
-    title="Example skills"
-    icon="code"
-    href="https://github.com/anthropics/skills"
+    title="Contribute"
+    icon="github"
+    href="https://github.com/agentepics/agentepics"
   >
-    Browse example skills on GitHub.
-  </Card>
-  <Card
-    title="Reference library"
-    icon="wrench"
-    href="https://github.com/agentepics/agentepics/tree/main/skills-ref"
-  >
-    Validate skills and generate prompt XML.
+    Propose spec changes, improve docs, or contribute examples.
   </Card>
 </CardGroup>

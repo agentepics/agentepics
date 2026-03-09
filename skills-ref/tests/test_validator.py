@@ -248,6 +248,21 @@ Body
     assert errors == []
 
 
+def test_empty_compatibility_rejected(tmp_path):
+    """Empty compatibility should fail."""
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text("""---
+name: my-skill
+description: A test skill
+compatibility: ""
+---
+Body
+""")
+    errors = validate(skill_dir)
+    assert any("compatibility" in e for e in errors)
+
+
 def test_compatibility_too_long(tmp_path):
     """Compatibility exceeding 500 chars should fail."""
     skill_dir = tmp_path / "my-skill"
@@ -262,6 +277,54 @@ Body
 """)
     errors = validate(skill_dir)
     assert any("exceeds" in e and "500" in e for e in errors)
+
+
+def test_metadata_must_be_string_map(tmp_path):
+    """metadata must be a mapping of string keys to string values."""
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text("""---
+name: my-skill
+description: A test skill
+metadata:
+  - bad
+---
+Body
+""")
+    errors = validate(skill_dir)
+    assert any("metadata" in e for e in errors)
+
+
+def test_allowed_tools_must_be_string(tmp_path):
+    """allowed-tools must be a non-empty string."""
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text("""---
+name: my-skill
+description: A test skill
+allowed-tools:
+  - Bash(git:*)
+---
+Body
+""")
+    errors = validate(skill_dir)
+    assert any("allowed-tools" in e for e in errors)
+
+
+def test_license_must_be_string(tmp_path):
+    """license must be a non-empty string."""
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text("""---
+name: my-skill
+description: A test skill
+license:
+  - invalid
+---
+Body
+""")
+    errors = validate(skill_dir)
+    assert any("license" in e for e in errors)
 
 
 def test_nfkc_normalization(tmp_path):

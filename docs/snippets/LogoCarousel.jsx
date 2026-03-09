@@ -1,5 +1,5 @@
 {/*
-  LogoCarousel component for the Agent Skills documentation.
+  LogoCarousel component for the Agent Epics documentation.
   Shuffles logos on each page load for fair exposure.
 
   To add a new logo:

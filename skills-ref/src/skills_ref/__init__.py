@@ -1,4 +1,4 @@
-"""Reference library for Agent Skills."""
+"""Reference library for SKILL.md compatibility."""
 
 from .errors import ParseError, SkillError, ValidationError
 from .models import SkillProperties

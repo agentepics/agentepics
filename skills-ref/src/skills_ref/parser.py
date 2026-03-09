@@ -12,17 +12,22 @@ from .models import SkillProperties
 def find_skill_md(skill_dir: Path) -> Optional[Path]:
     """Find the SKILL.md file in a skill directory.
 
-    Prefers SKILL.md (uppercase) but accepts skill.md (lowercase).
+    Requires an exact SKILL.md filename.
 
     Args:
-        skill_dir: Path to the skill directory
+        skill_dir: Path to the skill directory or a direct SKILL.md file path
 
     Returns:
         Path to the SKILL.md file, or None if not found
     """
-    for name in ("SKILL.md", "skill.md"):
-        path = skill_dir / name
-        if path.exists():
+    if skill_dir.is_file():
+        return skill_dir if skill_dir.name == "SKILL.md" else None
+
+    if not skill_dir.is_dir():
+        return None
+
+    for path in skill_dir.iterdir():
+        if path.is_file() and path.name == "SKILL.md":
             return path
     return None
 
@@ -39,15 +44,22 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
     Raises:
         ParseError: If frontmatter is missing or invalid
     """
-    if not content.startswith("---"):
+    lines = content.splitlines(keepends=True)
+
+    if not lines or lines[0].rstrip("\r\n") != "---":
         raise ParseError("SKILL.md must start with YAML frontmatter (---)")
 
-    parts = content.split("---", 2)
-    if len(parts) < 3:
+    closing_index = None
+    for index, line in enumerate(lines[1:], start=1):
+        if line.rstrip("\r\n") == "---":
+            closing_index = index
+            break
+
+    if closing_index is None:
         raise ParseError("SKILL.md frontmatter not properly closed with ---")
 
-    frontmatter_str = parts[1]
-    body = parts[2].strip()
+    frontmatter_str = "".join(lines[1:closing_index])
+    body = "".join(lines[closing_index + 1 :]).strip()
 
     try:
         parsed = strictyaml.load(frontmatter_str)
@@ -58,17 +70,50 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
     if not isinstance(metadata, dict):
         raise ParseError("SKILL.md frontmatter must be a YAML mapping")
 
-    if "metadata" in metadata and isinstance(metadata["metadata"], dict):
-        metadata["metadata"] = {str(k): str(v) for k, v in metadata["metadata"].items()}
-
     return metadata, body
+
+
+def _read_optional_string_field(metadata: dict, field_name: str) -> Optional[str]:
+    """Return a normalized optional string field or raise ValidationError."""
+    if field_name not in metadata:
+        return None
+
+    value = metadata[field_name]
+    if not isinstance(value, str) or not value.strip():
+        raise ValidationError(f"Field '{field_name}' must be a non-empty string")
+
+    return value.strip()
+
+
+def _read_optional_metadata_field(metadata: dict) -> dict[str, str]:
+    """Return normalized metadata or raise ValidationError."""
+    if "metadata" not in metadata:
+        return {}
+
+    value = metadata["metadata"]
+    if not isinstance(value, dict):
+        raise ValidationError(
+            "Field 'metadata' must be a mapping of string keys to string values"
+        )
+
+    normalized = {}
+    for key, item in value.items():
+        if not isinstance(key, str) or not isinstance(item, str):
+            raise ValidationError(
+                "Field 'metadata' must be a mapping of string keys to string values"
+            )
+        normalized[key] = item
+
+    return normalized
 
 
 def read_properties(skill_dir: Path) -> SkillProperties:
     """Read skill properties from SKILL.md frontmatter.
 
     This function parses the frontmatter and returns properties.
-    It does NOT perform full validation. Use validate() for that.
+    It performs lightweight structural validation so the returned data can be
+    serialized safely, but it does NOT perform full skill validation. Use
+    validate() for naming conventions and other spec checks.
 
     Args:
         skill_dir: Path to the skill directory
@@ -105,8 +150,8 @@ def read_properties(skill_dir: Path) -> SkillProperties:
     return SkillProperties(
         name=name.strip(),
         description=description.strip(),
-        license=metadata.get("license"),
-        compatibility=metadata.get("compatibility"),
-        allowed_tools=metadata.get("allowed-tools"),
-        metadata=metadata.get("metadata"),
+        license=_read_optional_string_field(metadata, "license"),
+        compatibility=_read_optional_string_field(metadata, "compatibility"),
+        allowed_tools=_read_optional_string_field(metadata, "allowed-tools"),
+        metadata=_read_optional_metadata_field(metadata),
     )

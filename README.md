@@ -1,24 +1,31 @@
 # Agent Epics
 
-[Agent Epics](https://agentepics.io) extends the [Agent Skills](https://agentepics.io/what-are-skills) standard with stateful, long-running workflows for AI agents.
-
-**Skills** are folders of instructions, scripts, and resources that agents can discover and use to perform better at specific tasks. Write once, use everywhere.
-
-**Epics** build on skills by adding structured state management — plans, logs, decisions, and lifecycle hooks — enabling agents to resume work across sessions and operate autonomously.
+[Agent Epics](https://agentepics.io) is an open format for durable agent
+systems. It builds on `SKILL.md` compatibility and adds plans, structured
+state, logs, decisions, hooks, cron, and policy for reusable workflows,
+autonomous operators, and installed capabilities.
 
 ## Getting Started
 
 - [Documentation](https://agentepics.io) - Guides and tutorials
-- [Skill Specification](https://agentepics.io/specification) - SKILL.md format details
-- [Epic Specification](https://agentepics.io/epic-specification) - EPIC.md format details
-- [Example Skills](https://github.com/anthropics/skills) - See what's possible
+- [Epic Specification](https://agentepics.io/epic-specification) - Core EPIC format details
+- [Epic Runtime](https://agentepics.io/epic-runtime) - Hooks, cron, policy, and executor semantics
+- [Epic Examples](https://agentepics.io/epic-examples) - Layouts, patterns, and worked examples
+- [Epic Reference](https://agentepics.io/specification) - Main EPIC reference entry point
+- [SKILL.md Reference](https://agentepics.io/skill-specification) - Compatibility details for the underlying format
 
-This repo contains the specifications, documentation, and reference SDK. Also see a list of example skills [here](https://github.com/anthropics/skills).
+This repo contains the EPIC specification, documentation site, compatibility
+references, and the reference SDK. The canonical EPIC specification source
+lives in `docs/`.
 
 ## About
 
-Agent Skills is an open format originally developed by [Anthropic](https://anthropic.com). Agent Epics extends the standard with stateful workflow capabilities. Both are open to contributions from the community.
+`SKILL.md` was originally developed by [Anthropic](https://anthropic.com) and
+released as an open format. Agent Epics extends that substrate with durable
+state, automation, and capability packaging and is maintained in this repo.
 
 ## License
 
-Code in this repository is licensed under [Apache 2.0](LICENSE). Documentation is licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/). See individual directories for details.
+Code in this repository is licensed under [Apache 2.0](LICENSE). Documentation
+is licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/).
+See individual directories for details.

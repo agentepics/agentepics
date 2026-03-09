@@ -1,6 +1,6 @@
 # skills-ref
 
-Reference library for Agent Skills.
+Reference library for `SKILL.md` compatibility.
 
 > [!IMPORTANT]
 > This library is intended for demonstration purposes only. It is not meant to be used in production.
@@ -88,7 +88,13 @@ print(prompt)
 
 ## Agent Prompt Integration
 
-Use `to-prompt` to generate the suggested `<available_skills>` XML block for your agent's system prompt. This format is recommended for Anthropic's models, but Skill Clients may choose to format it differently based on the model being used.
+Use `to-prompt` to generate the suggested `<available_skills>` XML block for
+your agent's system prompt. This XML shape is a practical compatibility format,
+but clients may choose to format the catalog differently based on the model
+being used.
+
+If no skills are available, omit the catalog entirely rather than emitting an
+empty `<available_skills>` block.
 
 ```xml
 <available_skills>

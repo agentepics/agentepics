@@ -13,14 +13,14 @@ from .validator import validate
 
 
 def _is_skill_md_file(path: Path) -> bool:
-    """Check if path points directly to a SKILL.md or skill.md file."""
-    return path.is_file() and path.name.lower() == "skill.md"
+    """Check if path points directly to a SKILL.md file."""
+    return path.is_file() and path.name == "SKILL.md"
 
 
 @click.group()
 @click.version_option()
 def main():
-    """Reference library for Agent Skills."""
+    """Reference library for SKILL.md compatibility."""
     pass
 
 
@@ -95,7 +95,8 @@ def to_prompt_cmd(skill_paths: tuple[Path, ...]):
                 resolved_paths.append(skill_path)
 
         output = to_prompt(resolved_paths)
-        click.echo(output)
+        if output:
+            click.echo(output)
     except SkillError as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)

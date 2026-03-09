@@ -9,7 +9,7 @@ from .parser import find_skill_md, read_properties
 def to_prompt(skill_dirs: list[Path]) -> str:
     """Generate the <available_skills> XML block for inclusion in agent prompts.
 
-    This XML format is what Anthropic uses and recommends for Claude models.
+    This XML format is a practical compatibility shape for skill catalogs.
     Skill Clients may format skill information differently to suit their
     models or preferences.
 
@@ -30,7 +30,7 @@ def to_prompt(skill_dirs: list[Path]) -> str:
         </available_skills>
     """
     if not skill_dirs:
-        return "<available_skills>\n</available_skills>"
+        return ""
 
     lines = ["<available_skills>"]
 
@@ -48,7 +48,7 @@ def to_prompt(skill_dirs: list[Path]) -> str:
 
         skill_md_path = find_skill_md(skill_dir)
         lines.append("<location>")
-        lines.append(str(skill_md_path))
+        lines.append(html.escape(str(skill_md_path)))
         lines.append("</location>")
 
         lines.append("</skill>")

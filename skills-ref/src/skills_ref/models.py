@@ -1,4 +1,4 @@
-"""Data models for Agent Skills."""
+"""Data models for SKILL.md compatibility."""
 
 from dataclasses import dataclass, field
 from typing import Optional
@@ -9,7 +9,7 @@ class SkillProperties:
     """Properties parsed from a skill's SKILL.md frontmatter.
 
     Attributes:
-        name: Skill name in kebab-case (required)
+        name: Skill name from frontmatter (required)
         description: What the skill does and when the model should use it (required)
         license: License for the skill (optional)
         compatibility: Compatibility information for the skill (optional)

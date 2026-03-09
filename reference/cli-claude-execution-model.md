@@ -11,8 +11,8 @@ split EPIC spec using:
 
 It is an implementation guide, not a normative spec. The normative sources are:
 
-- [EPIC-STANDARD.md](../EPIC-STANDARD.md)
-- [EPIC-RUNTIME.md](../EPIC-RUNTIME.md)
+- [Epic specification](../docs/epic-specification.mdx)
+- [Epic runtime specification](../docs/epic-runtime.mdx)
 
 Host-tool background:
 
@@ -39,7 +39,7 @@ The Claude-integrated CLI model is best understood as:
 
 - a solid **read-only loader**
 - a practical **interactive executor**
-- a **partial runtime executor** for selected `EPIC-RUNTIME.md` surfaces
+- a **partial runtime executor** for selected runtime-spec surfaces
 
 It is not, by itself, a full autonomous executor.
 
@@ -56,7 +56,7 @@ spec rules:
   operation
 - configured runtime features cannot be silently downgraded into SKILL.md advice
 
-If a feature from `EPIC-RUNTIME.md` is unsupported, the implementation should
+If a feature from the runtime specification is unsupported, the implementation should
 surface that limitation explicitly.
 
 ## Practical architecture

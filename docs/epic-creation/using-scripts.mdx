@@ -1,14 +1,20 @@
 ---
-title: "Using scripts in skills"
+title: "Using scripts in epics"
 sidebarTitle: "Using scripts"
-description: "How to run commands and bundle executable scripts in your skills."
+description: "How to run commands and bundle executable scripts in your epics."
 ---
 
-Skills can instruct agents to run shell commands and bundle reusable scripts in a `scripts/` directory. This guide covers one-off commands, self-contained scripts with their own dependencies, and how to design script interfaces for agentic use.
+Epics can instruct agents to run shell commands and bundle reusable scripts in a
+`scripts/` directory. This guide covers one-off commands, self-contained scripts
+with their own dependencies, and how to design script interfaces for agentic
+use across phases, plans, and runtime behavior.
 
 ## One-off commands
 
-When an existing package already does what you need, you can reference it directly in your `SKILL.md` instructions without a `scripts/` directory. Many ecosystems provide tools that auto-resolve dependencies at runtime.
+When an existing package already does what you need, you can reference it
+directly in your `SKILL.md` or `EPIC.md` guidance without a `scripts/`
+directory. Many ecosystems provide tools that auto-resolve dependencies at
+runtime.
 
 <Tabs sync={false}>
   <Tab title="uvx">
@@ -80,19 +86,22 @@ When an existing package already does what you need, you can reference it direct
   </Tab>
 </Tabs>
 
-**Tips for one-off commands in skills:**
+**Tips for one-off commands in epics:**
 
 - **Pin versions** (e.g., `npx eslint@9.0.0`) so the command behaves the same over time.
-- **State prerequisites** in your `SKILL.md` (e.g., "Requires Node.js 18+") rather than assuming the agent's environment has them. For runtime-level requirements, use the [`compatibility` frontmatter field](/specification#compatibility-field).
+- **State prerequisites** in your epic instructions (for example in `SKILL.md`, `EPIC.md`, or a phase description) rather than assuming the agent's environment has them. For compatibility-level requirements, use the [`compatibility` frontmatter field](/skill-specification#compatibility-field).
 - **Move complex commands into scripts.** A one-off command works well when you're invoking a tool with a few flags. When a command grows complex enough that it's hard to get right on the first try, a tested script in `scripts/` is more reliable.
 
-## Referencing scripts from `SKILL.md`
+## Referencing scripts from an epic
 
-Use **relative paths from the skill directory root** to reference bundled files. The agent resolves these paths automatically — no absolute paths needed.
+Use **relative paths from the epic directory root** to reference bundled files.
+The agent resolves these paths automatically — no absolute paths needed.
 
-List available scripts in your `SKILL.md` so the agent knows they exist:
+List available scripts in the epic materials that need them so the agent knows
+they exist. This may be in `SKILL.md`, `EPIC.md`, a phase description, a plan,
+or a runtime file.
 
-```markdown SKILL.md
+```markdown EPIC.md
 ## Available scripts
 
 - **`scripts/validate.sh`** — Validates configuration files
@@ -101,8 +110,8 @@ List available scripts in your `SKILL.md` so the agent knows they exist:
 
 Then instruct the agent to run them:
 
-````markdown SKILL.md
-## Workflow
+````markdown EPIC.md
+## Phase: Beta readiness
 
 1. Run the validation script:
    ```bash
@@ -116,12 +125,16 @@ Then instruct the agent to run them:
 ````
 
 <Note>
-The same relative-path convention works in support files like `references/*.md` — script execution paths (in code blocks) are relative to the **skill directory root**, because the agent runs commands from there.
+The same relative-path convention works in support files like `references/*.md`,
+plan files, and runtime files. Script execution paths are relative to the
+**epic directory root**.
 </Note>
 
 ## Self-contained scripts
 
-When you need reusable logic, bundle a script in `scripts/` that declares its own dependencies inline. The agent can run the script with a single command — no separate manifest file or install step required.
+When you need reusable logic, bundle a script in `scripts/` that declares its
+own dependencies inline. The agent can run the script with a single command —
+no separate manifest file or install step required.
 
 Several languages support inline dependency declarations:
 
@@ -226,6 +239,14 @@ Several languages support inline dependency declarations:
 
 When an agent runs your script, it reads stdout and stderr to decide what to do next. A few design choices make scripts dramatically easier for agents to use.
 
+In an epic, the same script might be used from several places:
+
+- a phase definition in `EPIC.md`
+- a current plan in `plans/`
+- a helper instruction in `skills/`
+- a recurring job in `cron.d/`
+- an event handler in `hooks/`
+
 ### Avoid interactive prompts
 
 This is a hard requirement of the agent execution environment. Agents operate in non-interactive shells — they cannot respond to TTY prompts, password dialogs, or confirmation menus. A script that blocks on interactive input will hang indefinitely.
@@ -296,3 +317,10 @@ my-service    running   2025-01-15
 - **Meaningful exit codes.** Use distinct exit codes for different failure types (not found, invalid arguments, auth failure) and document them in your `--help` output so the agent knows what each code means.
 - **Safe defaults.** Consider whether destructive operations should require explicit confirmation flags (`--confirm`, `--force`) or other safeguards appropriate to the risk level.
 - **Predictable output size.** Many agent harnesses automatically truncate tool output beyond a threshold (e.g., 10-30K characters), potentially losing critical information. If your script might produce large output, default to a summary or a reasonable limit, and support flags like `--offset` so the agent can request more information when needed. Alternatively, if output is large and not amenable to pagination, require agents to pass an `--output` flag that specifies either an output file or `-` to explicitly opt in to stdout.
+
+<Note>
+For a real-world example of an agentic validation script, see the
+[`validate-epic.sh` validator](/epic-creation/create-epic-skill#the-validator-validate-epicsh)
+bundled with the create-epic skill. It demonstrates structured output, meaningful
+exit codes, and clear error messages — all designed for agent consumption.
+</Note>

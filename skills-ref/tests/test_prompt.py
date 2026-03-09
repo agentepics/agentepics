@@ -5,7 +5,7 @@ from skills_ref.prompt import to_prompt
 
 def test_empty_list():
     result = to_prompt([])
-    assert result == "<available_skills>\n</available_skills>"
+    assert result == ""
 
 
 def test_single_skill(tmp_path):
@@ -68,3 +68,19 @@ Body
     assert "&lt;bar&gt;" in result
     assert "<foo>" not in result
     assert "<bar>" not in result
+
+
+def test_location_escaped(tmp_path):
+    """XML special characters in skill paths are escaped."""
+    parent = tmp_path / "special&dir"
+    skill_dir = parent / "path-skill"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text("""---
+name: path-skill
+description: Path test
+---
+Body
+""")
+    result = to_prompt([skill_dir])
+    assert "special&amp;dir" in result
+    assert "special&dir" not in result

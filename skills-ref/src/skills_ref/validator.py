@@ -11,7 +11,7 @@ MAX_SKILL_NAME_LENGTH = 64
 MAX_DESCRIPTION_LENGTH = 1024
 MAX_COMPATIBILITY_LENGTH = 500
 
-# Allowed frontmatter fields per Agent Skills Spec
+# Allowed frontmatter fields per SKILL.md spec
 ALLOWED_FIELDS = {
     "name",
     "description",
@@ -20,6 +20,13 @@ ALLOWED_FIELDS = {
     "metadata",
     "compatibility",
 }
+
+
+def _validate_license(license_value: str) -> list[str]:
+    """Validate license format."""
+    if not isinstance(license_value, str) or not license_value.strip():
+        return ["Field 'license' must be a non-empty string"]
+    return []
 
 
 def _validate_name(name: str, skill_dir: Path) -> list[str]:
@@ -92,6 +99,10 @@ def _validate_compatibility(compatibility: str) -> list[str]:
         errors.append("Field 'compatibility' must be a string")
         return errors
 
+    if not compatibility.strip():
+        errors.append("Field 'compatibility' must be 1-500 characters when provided")
+        return errors
+
     if len(compatibility) > MAX_COMPATIBILITY_LENGTH:
         errors.append(
             f"Compatibility exceeds {MAX_COMPATIBILITY_LENGTH} character limit "
@@ -99,6 +110,30 @@ def _validate_compatibility(compatibility: str) -> list[str]:
         )
 
     return errors
+
+
+def _validate_metadata_value(metadata_value: object) -> list[str]:
+    """Validate metadata field shape."""
+    errors = []
+
+    if not isinstance(metadata_value, dict):
+        return ["Field 'metadata' must be a mapping of string keys to string values"]
+
+    for key, value in metadata_value.items():
+        if not isinstance(key, str) or not isinstance(value, str):
+            errors.append(
+                "Field 'metadata' must be a mapping of string keys to string values"
+            )
+            break
+
+    return errors
+
+
+def _validate_allowed_tools(allowed_tools: object) -> list[str]:
+    """Validate allowed-tools field shape."""
+    if not isinstance(allowed_tools, str) or not allowed_tools.strip():
+        return ["Field 'allowed-tools' must be a non-empty space-delimited string"]
+    return []
 
 
 def _validate_metadata_fields(metadata: dict) -> list[str]:
@@ -143,6 +178,15 @@ def validate_metadata(metadata: dict, skill_dir: Optional[Path] = None) -> list[
 
     if "compatibility" in metadata:
         errors.extend(_validate_compatibility(metadata["compatibility"]))
+
+    if "license" in metadata:
+        errors.extend(_validate_license(metadata["license"]))
+
+    if "metadata" in metadata:
+        errors.extend(_validate_metadata_value(metadata["metadata"]))
+
+    if "allowed-tools" in metadata:
+        errors.extend(_validate_allowed_tools(metadata["allowed-tools"]))
 
     return errors
 

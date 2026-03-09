@@ -1,11 +1,11 @@
 [project]
 name = "skills-ref"
 version = "0.1.0"
-description = "Reference library for Agent Skills"
+description = "Reference library for SKILL.md compatibility"
 license = "Apache-2.0"
 readme = "README.md"
 authors = [
-    { name = "Keith Lazuka", email = "klazuka@anthropic.com" }
+    { name = "Kindship.ai" }
 ]
 requires-python = ">=3.11"
 dependencies = [
