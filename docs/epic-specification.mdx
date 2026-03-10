@@ -11,11 +11,11 @@ authoritative files, resumption, mutable state, and compatibility rules.
 Read this page when you need the **normative core format**.
 If you only need the quick map, start at [Epic Reference](/specification).
 If you need executor behavior for hooks, cron, or policy, go to
-[Epic Runtime](/epic-runtime).
+[Epic Executor Specification](/epic-executor).
 
 Companion pages:
 
-- [Epic runtime specification](/epic-runtime) — normative runtime and executor behavior for `hooks/`, `cron.d/`, `policy.yml`, and the live `runtime/` tree
+- [Epic Executor Specification](/epic-executor) — normative executor behavior for `hooks/`, `cron.d/`, and `policy.yml`
 - [Epic examples](/epic-examples) — non-normative examples, directory trees, and patterns
 
 This page defines the core EPIC surface. Runtime behavior is specified
@@ -49,7 +49,7 @@ This core document covers:
 - portability, validation, and compatibility
 
 Detailed runtime behavior for hooks, cron, policy, and live-instance behavior is
-specified in the [epic runtime specification](/epic-runtime).
+specified in the [epic executor specification](/epic-executor).
 
 ## Design Principles
 
@@ -108,10 +108,10 @@ epic-name/
 │   └── artifacts/       (optional — produced outputs, deliverables)
 │
 │   # Optional extensions
-├── cron.d/              (optional — recurring task definitions; see /epic-runtime)
+├── cron.d/              (optional — recurring task definitions; see /epic-executor)
 ├── skills/              (optional — epic-scoped skills)
-├── hooks/               (optional — event-triggered typed handlers; see /epic-runtime)
-├── policy.yml           (optional — autonomous-operation constraints; see /epic-runtime)
+├── hooks/               (optional — event-triggered typed handlers; see /epic-executor)
+├── policy.yml           (optional — autonomous-operation constraints; see /epic-executor)
 ├── scripts/             (inherited from SKILL.md standard)
 ├── references/          (inherited from SKILL.md standard)
 └── assets/              (inherited from SKILL.md standard)
@@ -168,8 +168,8 @@ log the discrepancy in `runtime/log/` and resolve it.
 
 ## SKILL.md — Discovery, Activation, and Gateway
 
-An epic's `SKILL.md` uses the standard SKILL format with no EPIC-specific
-frontmatter additions.
+An epic's `SKILL.md` uses the standard SKILL format. Epics do not add any new
+required EPIC-specific frontmatter fields.
 
 ```yaml
 ---
@@ -178,8 +178,34 @@ description: >
   Workflow for launching a SaaS product. Covers architecture decisions,
   implementation, deployment, and first-customer onboarding. Activate
   this epic when planning or executing a product launch.
+metadata:
+  source:
+    repo: github.com/agentepics/epics
+    path: saas-launch
+    ref: main
 ---
 ```
+
+Published epics SHOULD include `metadata.source` as a published-source hint.
+Local-only or unpublished epics MAY omit it. If present, `metadata.source`
+MUST be either:
+
+- an absolute `http` or `https` URL string
+- a structured object with `repo`, `path`, and optional `ref`
+
+The structured form is RECOMMENDED for published epics:
+
+```yaml
+metadata:
+  source:
+    repo: github.com/agentepics/epics
+    path: saas-launch
+    ref: main
+```
+
+Hosts MAY use `metadata.source` to locate the full epic when only a standalone
+`SKILL.md` is available. Hosts MUST NOT assume that it exists, and trust policy
+still governs any fetch or install behavior.
 
 For `spec_version: 0.5.2`, the `SKILL.md` body is split into two sections:
 
@@ -300,10 +326,10 @@ The normative EPIC validation surface is:
 - `runtime/state/core.json` reserved fields
 - plan file required sections
 - log frontmatter
-- `cron.d/*.yml` as defined in the [epic runtime specification](/epic-runtime)
-- `policy.yml` as defined in the [epic runtime specification](/epic-runtime)
-- markdown hook frontmatter as defined in the [epic runtime specification](/epic-runtime)
-- HTTP hook YAML config as defined in the [epic runtime specification](/epic-runtime)
+- `cron.d/*.yml` as defined in the [epic executor specification](/epic-executor)
+- `policy.yml` as defined in the [epic executor specification](/epic-executor)
+- markdown hook frontmatter as defined in the [epic executor specification](/epic-executor)
+- HTTP hook YAML config as defined in the [epic executor specification](/epic-executor)
 
 ### Compatibility rules
 
@@ -320,7 +346,7 @@ Implementations SHOULD document which of these levels they satisfy:
 
 - **Read-only loader** — discovers epics, reads authoritative files, and validates reserved fields
 - **Interactive executor** — performs resumption and user-driven updates while following mutability and validation rules
-- **Autonomous executor** — additionally supports the [epic runtime specification](/epic-runtime) and enforces `policy.yml` during unattended execution
+- **Autonomous executor** — additionally supports the [epic executor specification](/epic-executor) and enforces `policy.yml` during unattended execution
 
 ## `runtime/ROADMAP.md` — Strategic Intent
 
@@ -473,7 +499,7 @@ EPIC builds on `SKILL.md` as follows:
 - Epics add lifecycle, memory, and optional runtime behavior.
 
 <Note>
-For runtime behavior including hooks, cron jobs, policy constraints, and live
-instance behavior, see the [epic runtime specification](/epic-runtime). For
+For runtime behavior including hooks, cron jobs, and policy constraints,
+see the [epic executor specification](/epic-executor). For
 worked examples and patterns, see [epic examples](/epic-examples).
 </Note>

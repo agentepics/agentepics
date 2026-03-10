@@ -42,12 +42,14 @@ state rules, and guardrails stay authoritative in `EPIC.md` and `runtime/`.
 
 1. Set `EPIC.md.spec_version` to `0.5.2`.
 2. Add standard skill frontmatter to `SKILL.md` if it is missing.
-3. Replace long self-contained resume prose in `SKILL.md` with a short
+3. For published epics, consider adding `metadata.source` to `SKILL.md`
+   frontmatter as a published-source hint. It is recommended, not required.
+4. Replace long self-contained resume prose in `SKILL.md` with a short
    activation-oriented top section that points to `EPIC.md`.
-4. Append the canonical footer from [`footer.md`](https://github.com/agentepics/agentepics/blob/v0.5.2/footer.md).
-5. Keep all live plans, state, logs, roadmap, decisions, and artifacts under
+5. Append the canonical footer from [`footer.md`](https://github.com/agentepics/agentepics/blob/v0.5.2/footer.md).
+6. Keep all live plans, state, logs, roadmap, decisions, and artifacts under
    `runtime/` exactly as in `0.5.1`.
-6. Validate the package and refresh stale footers through tooling rather than
+7. Validate the package and refresh stale footers through tooling rather than
    by forking the footer text by hand.
 
 <Note>
@@ -58,6 +60,8 @@ Use `footer.md` as the source text when upgrading. The footer marker embedded in
 
 - `EPIC.md` says `spec_version: 0.5.2`
 - `SKILL.md` starts with standard skill frontmatter
+- published epics should include `metadata.source` in `SKILL.md` frontmatter
+  when they want hosts to have a recovery hint from standalone `SKILL.md`
 - `SKILL.md` mentions that durable context lives in `EPIC.md`
 - `SKILL.md` includes the canonical `## Agent Epics` footer and marker
 - runtime behavior still lives in `EPIC.md`, `runtime/`, `hooks/`, `cron.d/`,
@@ -86,7 +90,11 @@ Update activation and resumption logic to:
 3. Preserve and understand the canonical `## Agent Epics` footer when present.
 4. Continue with `EPIC.md`, `runtime/state*`, `runtime/plans/`, and
    `runtime/log/` as the authoritative resumption sequence.
-5. If the host lacks epic support, surface the canonical installer or
+5. If `metadata.source` is present, treat it as a published-source hint when
+   only `SKILL.md` is available. Support both an absolute `http`/`https` URL
+   string and a structured object with `repo`, `path`, and optional `ref`.
+   Trust policy still governs whether fetching or installing is allowed.
+6. If the host lacks epic support, surface the canonical installer or
    integration path (`https://epics.sh`) but do not auto-install on behalf of a
    repo-local epic unless trust policy explicitly allows it.
 

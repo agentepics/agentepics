@@ -12,8 +12,8 @@ This page is the main reference entry point for Agent Epics.
   rule lives.
 - Read [Epic Specification](/epic-specification) when you need the normative
   portable file-format rules for `EPIC.md`, plans, state, logs, and precedence.
-- Read [Epic Runtime](/epic-runtime) when you need executor behavior for
-  `hooks/`, `cron.d/`, `policy.yml`, and the live `runtime/` tree.
+- Read [Epic Executor Specification](/epic-executor) when you need executor behavior for
+  `hooks/`, `cron.d/`, and `policy.yml`.
 - Read [Epic Examples](/epic-examples) or the
   [Worked example](/epic-creation/worked-example) when you want concrete
   patterns rather than the normative surface.
@@ -21,7 +21,7 @@ This page is the main reference entry point for Agent Epics.
 If you need the full normative details, continue to:
 
 - [Epic Specification](/epic-specification) for core EPIC semantics
-- [Epic Runtime](/epic-runtime) for hooks, cron, policy, and executor behavior
+- [Epic Executor Specification](/epic-executor) for hooks, cron, policy, and executor behavior
 
 This page summarizes the model those documents define. It is the reference map,
 not the full normative text.
@@ -63,6 +63,8 @@ Every epic requires:
 
 `SKILL.md` keeps the package compatible with existing skill loaders and, in
 `0.5.2`, also gives first-contact orientation into the epic system.
+Published epics may also include an optional `metadata.source` hint so hosts
+can try to locate the full epic when only `SKILL.md` is available.
 `EPIC.md` is what makes the package an epic.
 
 ## `EPIC.md`
@@ -132,18 +134,17 @@ Filename format:
 
 Logs are append-only except for redaction.
 
-## Runtime surface
+## Executor surface
 
-Runtime extensions let an epic operate beyond interactive resumption:
+Executor extensions let an epic operate beyond interactive resumption:
 
 | Feature | Purpose |
 |---------|---------|
 | `hooks/` | Event-triggered reactions |
 | `cron.d/` | Recurring execution |
 | `policy.yml` | Hard constraints on autonomous operation |
-| `runtime/` | Portable live state for the current run |
 
-These features are specified in [Epic Runtime](/epic-runtime). A compliant
+These features are specified in [Epic Executor Specification](/epic-executor). A compliant
 executor must either honor them or surface that it does not support them.
 
 ## Archetypes
@@ -171,7 +172,7 @@ If you need the underlying `SKILL.md` compatibility rules, read the
 ## Implementation references
 
 - [Epic Specification](/epic-specification) for normative core rules
-- [Epic Runtime](/epic-runtime) for executor and runtime behavior
+- [Epic Executor Specification](/epic-executor) for executor behavior
 - [Worked example](/epic-creation/worked-example) for one end-to-end reusable website epic
 - [Epic Usage](/epic-usage) for how agents materialize `runtime/` plans, state, logs, and runtime evolution over time
 - [Migrating from 0.5.0 to 0.5.1](/epic-migration-0-5-1) for the filesystem move to `runtime/`

@@ -15,7 +15,7 @@ features correctly or surface that they are unsupported.
 
 - [Epic Reference](/specification)
 - [Epic Specification](/epic-specification)
-- [Epic Runtime](/epic-runtime)
+- [Epic Executor Specification](/epic-executor)
 - [SKILL.md Reference](/skill-specification)
 
 ## What EPIC support means
@@ -130,6 +130,12 @@ For `spec_version: 0.5.2`, `SKILL.md` includes a standardized `## Agent Epics`
 footer pinned by a canonical marker. Hosts should preserve that block exactly,
 may parse it for lightweight orientation or staleness checks, and should still
 treat `EPIC.md` plus `runtime/` as the authoritative resume surface.
+
+Published epics may also include `metadata.source` in `SKILL.md` frontmatter
+as an optional published-source hint. Hosts may use it to locate the full epic
+when only `SKILL.md` is available. Support both an absolute `http`/`https` URL
+string and a structured object with `repo`, `path`, and optional `ref`; trust
+policy should still govern any fetch or install behavior.
 
 ## Step 4: Let the agent maintain epic state
 
@@ -263,5 +269,5 @@ If you need to migrate an existing implementation, see
 
 - [Read the Epic Reference](/specification)
 - [Read the Epic Specification](/epic-specification)
-- [Read the Runtime specification](/epic-runtime)
+- [Read the Executor specification](/epic-executor)
 - [Read the SKILL.md Reference](/skill-specification)

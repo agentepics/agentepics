@@ -52,7 +52,7 @@ metadata:
 | `description`   | Yes      | Max 1024 characters. Non-empty. Describes what the skill does and when to use it.                                 |
 | `license`       | No       | License name or reference to a bundled license file.                                                              |
 | `compatibility` | No       | Max 500 characters. Indicates environment requirements (intended product, system packages, network access, etc.). |
-| `metadata`      | No       | Arbitrary key-value mapping for additional metadata.                                                              |
+| `metadata`      | No       | Additional metadata. Keys are usually string-valued; shared conventions such as `metadata.source` may use a structured value. |
 | `allowed-tools` | No       | Space-delimited list of pre-approved tools the skill may use. (Experimental)                                      |
 
 #### `name` field
@@ -150,7 +150,8 @@ compatibility: Requires git, docker, jq, and access to the internet
 
 The optional `metadata` field:
 
-* A map from string keys to string values
+* A mapping with string keys
+* Values are usually strings, but shared conventions such as `metadata.source` may use a structured value
 * Clients can use this to store additional properties not defined by the Agent Skills spec
 * We recommend making your key names reasonably unique to avoid accidental conflicts
 
@@ -160,6 +161,24 @@ Example:
 metadata:
   author: example-org
   version: "1.0"
+```
+
+#### `metadata.source` shared convention
+
+`metadata.source` is an optional shared convention for skills or epics that
+want to point back to a published source. When present, it must be either:
+
+* an absolute `http` or `https` URL string
+* a structured object with `repo`, `path`, and optional `ref`
+
+Example:
+
+```yaml
+metadata:
+  source:
+    repo: github.com/agentepics/epics
+    path: agent-heartbeat
+    ref: main
 ```
 
 #### `allowed-tools` field

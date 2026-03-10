@@ -50,6 +50,11 @@ name: saas-launch
 description: >
   Workflow for launching a SaaS product. Activate this epic when planning
   or executing a new product launch.
+metadata:
+  source:
+    repo: github.com/agentepics/epics
+    path: saas-launch
+    ref: main
 ---
 
 # SaaS Launch
@@ -78,6 +83,19 @@ Write `SKILL.md` to be:
 
 The `name` field must use Unicode lowercase letters, digits, and hyphens,
 match the directory name, and stay under 64 characters.
+
+For published epics, `metadata.source` is recommended but not required in the
+frontmatter. Use it when you want hosts that encounter a standalone `SKILL.md`
+to have a machine-readable hint for where the full epic was published. The
+recommended form is:
+
+```yaml
+metadata:
+  source:
+    repo: github.com/agentepics/epics
+    path: saas-launch
+    ref: main
+```
 
 ## Step 2: Write `EPIC.md` for the durable definition
 
