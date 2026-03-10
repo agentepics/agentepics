@@ -1,180 +1,73 @@
 ---
 title: "Epic Reference"
-description: "Reference entry point for Agent Epics: the required files, core operating surface, runtime extensions, and compatibility model."
+description: "The shortest accurate map of the Agent Epics docs and file surface."
 ---
 
-This page is the main reference entry point for Agent Epics.
+This page is the quick reference map for Agent Epics.
 
-## Which page to read
+If you already know what an epic is and just need to find the right rule or
+page, start here.
 
-- Read **this page** when you want the shortest accurate map of the EPIC
-  surface: required files, state precedence, runtime extensions, and where each
-  rule lives.
-- Read [Epic Specification](/epic-specification) when you need the normative
-  portable file-format rules for `EPIC.md`, plans, state, logs, and precedence.
-- Read [Epic Scripting Specification](/epic-scripting) when you need scripting behavior for
-  `hooks/`, `cron.d/`, and `policy.yml`.
-- Read [Epic Examples](/epic-examples) or the
-  [Worked example](/epic-creation/worked-example) when you want concrete
-  patterns rather than the normative surface.
+## Read this page when you need...
 
-If you need the full normative details, continue to:
+| Need | Page |
+|------|------|
+| A short map of the EPIC surface | This page |
+| The normative core file-format rules | [Epic Specification](/epic-specification) |
+| The scripting rules for hooks, cron, and policy | [Epic Scripting Specification](/epic-scripting) |
+| A concrete example | [Worked example](/epic-creation/worked-example) |
+| Non-normative layouts and sample files | [Epic Examples](/epic-examples) |
 
-- [Epic Specification](/epic-specification) for core EPIC semantics
-- [Epic Scripting Specification](/epic-scripting) for hooks, cron, policy, and scripting behavior
+## What an epic contains
 
-This page summarizes the model those documents define. It is the reference map,
-not the full normative text.
+At minimum, an epic is:
 
-## What an epic is
+- `SKILL.md` for discovery and activation
+- `EPIC.md` for the durable operating definition
 
-An epic is a valid `SKILL.md` package plus an `EPIC.md` file and, optionally,
-an operating file set around it.
+Most useful epics also grow some or all of:
 
-```directory
-my-epic/
-├── SKILL.md
-├── EPIC.md
-├── runtime/
-│   ├── plans/
-│   ├── state.json
-│   ├── log/
-│   ├── ROADMAP.md
-│   ├── DECISIONS.md
-│   └── artifacts/
-├── hooks/
-├── cron.d/
-├── policy.yml
-├── skills/
-├── scripts/
-├── references/
-└── assets/
-```
+- `runtime/plans/`
+- `runtime/state.json` or `runtime/state/`
+- `runtime/log/`
+- `runtime/ROADMAP.md`
+- `runtime/DECISIONS.md`
+- `runtime/artifacts/`
+- `hooks/`
+- `cron.d/`
+- `policy.yml`
 
-The key distinction is that the epic can hold durable state and operating
-behavior, not just reusable instructions.
+## Essential rules at a glance
 
-## Required files
+- `SKILL.md` and `EPIC.md` are the only required files.
+- `runtime/state/core.json` is authoritative over `runtime/state.json` when
+  split state is used.
+- `runtime/plans/` carries the current tactical work.
+- `runtime/log/` is append-only history.
+- `policy.yml` is a hard constraint when present.
+- Published epics may include `metadata.source`, but it remains optional.
 
-Every epic requires:
+## Reference pages
 
-- `SKILL.md` for discovery, activation, and the Agent Epics gateway footer
-- `EPIC.md` for durable identity and operating definition
+### Core EPIC reference
 
-`SKILL.md` keeps the package compatible with existing skill loaders and, in
-`0.5.2`, also gives first-contact orientation into the epic system.
-Published epics may also include an optional `metadata.source` hint so hosts
-can try to locate the full epic when only `SKILL.md` is available.
-`EPIC.md` is what makes the package an epic.
+- [Epic Core Model](/epic-core-model)
+- [Epic Resumption](/epic-resumption)
+- [Epic State Files](/epic-state-files)
+- [Epic Portability And Validation](/epic-portability-and-validation)
 
-## `EPIC.md`
+### Scripting reference
 
-`EPIC.md` contains:
+- [Epic Cron Jobs](/epic-cron)
+- [Epic Hooks](/epic-hooks)
+- [Epic Policy](/epic-policy)
 
-- YAML frontmatter with required identity fields
-- a Markdown body describing the epic's purpose, scope, phases, success model,
-  and resumption guidance
+### Compatibility reference
 
-Required frontmatter fields:
+- [SKILL.md compatibility](/what-are-skills)
+- [SKILL.md Reference](/skill-specification)
 
-| Field | Purpose |
-|-------|---------|
-| `id` | Unique epic identifier within the workspace |
-| `spec_version` | EPIC spec version targeted by the file |
+### Migration guides
 
-Common optional fields:
-
-| Field | Purpose |
-|-------|---------|
-| `tags` | Lightweight classification tags |
-| `timezone` | Default timezone for runtime behavior |
-
-The body should describe what stays true across sessions and, for reusable
-workflow epics, across runs.
-
-## Core operating files
-
-The core operating surface is usually built from these files:
-
-| File or directory | Role |
-|-------------------|------|
-| `runtime/plans/` | Tactical working loop: now, next, blocked |
-| `runtime/state.json` or `runtime/state/` | Machine-readable facts and lifecycle state |
-| `runtime/log/` | Append-only durable history |
-| `runtime/ROADMAP.md` | Longer-horizon milestones for the current run |
-| `runtime/DECISIONS.md` | Curated decision memory for the current run |
-| `runtime/artifacts/` | Outputs, deliverables, and generated work |
-
-An epic does not need all of them to be valid. They appear as the epic is used.
-
-## State precedence
-
-When both state forms exist:
-
-- `runtime/state/core.json` is authoritative over `runtime/state.json`
-
-Reserved state fields:
-
-| Field | Meaning |
-|-------|---------|
-| `state_version` | Schema version for the structured state |
-| `status` | Lifecycle status: `active`, `paused`, `complete`, `abandoned` |
-| `current_plan` | Active plan filename in `runtime/plans/` |
-
-Everything else in structured state is epic-defined.
-
-## Logs
-
-Logs provide durable continuity across sessions, collaborators, and autonomous
-runs.
-
-Filename format:
-
-`YYYY-MM-DDTHH-MM-SSZ-{actor}-{slug}.md`
-
-Logs are append-only except for redaction.
-
-## Scripting surface
-
-Scripting extensions let an epic operate beyond interactive resumption:
-
-| Feature | Purpose |
-|---------|---------|
-| `hooks/` | Event-triggered reactions |
-| `cron.d/` | Recurring execution |
-| `policy.yml` | Hard constraints on autonomous operation |
-
-These features are specified in [Epic Scripting Specification](/epic-scripting). A compliant
-scripting host must either honor them or surface that it does not support them.
-
-## Archetypes
-
-Most epics fall into one of three patterns:
-
-- **Workflow epic**: reusable operating model with fresh state for each run
-- **Instance epic**: one specific long-lived project
-- **Capability epic**: installed agent capability that keeps operating over time
-
-See [Epic archetypes](/epic-creation/archetypes) for concrete examples.
-
-## Compatibility model
-
-Every epic is still a valid skill package. That means:
-
-- skill-aware systems can still discover `SKILL.md`
-- epic-aware systems can additionally detect `EPIC.md`
-- `0.5.2` hosts can use the standardized `## Agent Epics` footer as a portable compatibility bridge
-- the surrounding operating files provide durable state, memory, and runtime behavior
-
-If you need the underlying `SKILL.md` compatibility rules, read the
-[SKILL.md Reference](/skill-specification).
-
-## Implementation references
-
-- [Epic Specification](/epic-specification) for normative core rules
-- [Epic Scripting Specification](/epic-scripting) for scripting behavior
-- [Worked example](/epic-creation/worked-example) for one end-to-end reusable website epic
-- [Epic Usage](/epic-usage) for how agents materialize `runtime/` plans, state, logs, and runtime evolution over time
-- [Migrating from 0.5.0 to 0.5.1](/epic-migration-0-5-1) for the filesystem move to `runtime/`
-- [Migrating from 0.5.1 to 0.5.2](/epic-migration-0-5-2) for the dual-purpose `SKILL.md` and canonical footer
-- [How to add EPIC support](/client-implementation/add-epics-support) for harness implementation guidance
+- [Migrating from 0.5.0 to 0.5.1](/epic-migration-0-5-1)
+- [Migrating from 0.5.1 to 0.5.2](/epic-migration-0-5-2)

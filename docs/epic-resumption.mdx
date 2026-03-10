@@ -1,0 +1,69 @@
+---
+title: "Epic Resumption"
+description: "Progressive disclosure and the canonical resumption sequence for Agent Epics."
+---
+
+This page defines how agents should load an epic without pulling the entire
+directory into context at once.
+
+**Version 0.5.2**
+
+## Progressive disclosure
+
+Epics extend the skill disclosure model from 3 to 6 levels:
+
+| Level | What | When loaded | Budget |
+|-------|------|-------------|--------|
+| 1 | `SKILL.md` frontmatter | Always - skill index | ~150 words |
+| 2 | `SKILL.md` top section + footer + `EPIC.md` + `policy.yml` when present | When epic activates | &lt;500 lines combined |
+| 3 | `runtime/state.json` or `runtime/state/core.json` + current plan from `runtime/plans/` | Immediately after activation | &lt;150 lines combined |
+| 4 | Recent `runtime/log/` entries (last 3-5) | For session continuity | ~200 lines |
+| 5 | `runtime/ROADMAP.md` + `runtime/DECISIONS.md` | When strategic context is needed | &lt;300 lines |
+| 6 | Full `runtime/`, skills, references, and supporting folders | On demand | Unlimited |
+
+Level 1 remains `SKILL.md` frontmatter only so plugin-based coding agents can
+index epics using the same mechanism as ordinary skills.
+
+## Resumption sequence
+
+When an agent resumes work on an epic, it SHOULD:
+
+1. Read `SKILL.md` frontmatter and the short operational top section.
+2. Read `SKILL.md`'s `## Agent Epics` footer if the host or agent needs
+   epic-system orientation.
+3. Read `EPIC.md` frontmatter and body, plus `policy.yml` if present.
+4. If `runtime/` is absent or empty, treat the epic as a fresh template or
+   unstarted instance.
+5. Read `runtime/state/core.json` if present; otherwise read
+   `runtime/state.json` if present.
+6. Read the current plan from `runtime/plans/`.
+   Use `runtime/state/core.json.current_plan` or
+   `runtime/state.json.current_plan` when present.
+   Otherwise load the most recently modified plan file in `runtime/plans/`.
+7. Read the 3-5 most recent entries from `runtime/log/`.
+
+<Note>
+The `SKILL.md` footer carries a compressed resumption subset for agents that
+encounter an epic cold. The full 7-step sequence above is authoritative for
+implementers; the footer corresponds to steps 3-7 in condensed form.
+</Note>
+
+<Warning>
+Agents SHOULD NOT take action before completing steps 1-6.
+</Warning>
+
+## What to defer until later
+
+Do not load everything up front unless the task clearly needs it. In most
+cases, defer these until they become relevant:
+
+- `runtime/ROADMAP.md`
+- `runtime/DECISIONS.md`
+- older log entries
+- `references/`
+- `skills/`
+- `scripts/`
+- `runtime/artifacts/`
+
+This keeps activation cheap while preserving a reliable path back to the full
+operating surface.

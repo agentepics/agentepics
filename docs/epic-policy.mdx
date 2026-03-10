@@ -1,0 +1,69 @@
+---
+title: "Epic Policy"
+description: "Autonomous-operation constraints for Agent Epics."
+---
+
+This page defines `policy.yml`, the file that constrains unattended or
+scripting-driven operation.
+
+**Version 0.5.2**
+
+## `policy.yml` - constraints for autonomous operation
+
+`policy.yml` declares boundaries for agents operating on the epic without human
+oversight. Agents MUST read it at activation time and treat it as hard
+constraints. Policy applies to hooks and cron jobs as well as interactive
+sessions.
+
+```yaml
+autonomy:
+  max_spend_per_run: 0.50
+  allowed_tools:
+    - web_search
+    - bash
+    - file_create
+  forbidden_actions:
+    - delete production data
+    - commit to main branch
+    - send external emails without approval
+
+hooks:
+  allowed_types:
+    - prompt
+    - script
+    - http
+    - agent
+  allowed_domains:
+    - hooks.slack.com
+    - api.pagerduty.com
+  max_timeout_seconds: 900
+
+escalation:
+  on_error: log_and_continue
+  on_ambiguity: ask_human
+  notify: martin@kindship.ai
+```
+
+If no `policy.yml` exists, autonomous behavior defaults to:
+
+- `on_error: log_and_continue`
+- `on_ambiguity: ask_human`
+
+In that case, the epic inherits the host agent's existing constraints rather
+than gaining broader privileges.
+
+## Hook-specific policy rules
+
+- `hooks.allowed_types` controls which hook handler types may run. If absent,
+  tooling SHOULD allow `prompt` and `script` only.
+- `http` hooks MUST be denied unless `http` appears in `hooks.allowed_types`.
+- `agent` hooks MUST be denied unless `agent` appears in `hooks.allowed_types`.
+- `hooks.allowed_domains` applies only to `http` hooks. If absent, `http`
+  hooks MUST be denied.
+- `hooks.max_timeout_seconds`, when present, caps per-hook `timeout` values.
+
+Autonomous execution surfaces MAY run only local workspace files or inline
+prompts already stored in the epic. Fetching remote prompts or executable code
+during autonomous execution requires explicit human approval.
+
+`http` hooks MAY call external services only when allowed by `policy.yml`.

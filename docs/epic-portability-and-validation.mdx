@@ -1,0 +1,106 @@
+---
+title: "Epic Portability And Validation"
+description: "Validation surface, compatibility rules, portability guidance, and the relationship between EPIC and SKILL.md."
+---
+
+This page defines what implementations must validate and what makes an epic
+portable across tools and workspaces.
+
+**Version 0.5.2**
+
+## Validation and compatibility
+
+Reserved fields exist so tools can interoperate safely. Implementations MAY add
+epic-defined extension fields, but they MUST validate and preserve the
+reserved fields defined by this standard.
+
+### Normative validation surface
+
+The normative EPIC validation surface is:
+
+- `SKILL.md` frontmatter
+- the `SKILL.md` `## Agent Epics` footer marker and heading for
+  `spec_version: 0.5.2`
+- `EPIC.md` frontmatter
+- `runtime/state.json` reserved fields
+- `runtime/state/core.json` reserved fields
+- plan file required sections
+- log frontmatter
+- `cron.d/*.yml` as defined in the [epic scripting specification](/epic-scripting)
+- `policy.yml` as defined in the [epic scripting specification](/epic-scripting)
+- markdown hook frontmatter as defined in the [epic scripting specification](/epic-scripting)
+- HTTP hook YAML config as defined in the [epic scripting specification](/epic-scripting)
+
+### Compatibility rules
+
+- Readers MUST ignore unknown fields from newer revisions unless the unknown
+  field changes execution semantics in a way the reader cannot safely handle.
+- Writers MUST preserve unknown fields in machine-readable files when
+  performing targeted updates.
+- Breaking changes to reserved fields or file semantics MUST increment
+  `spec_version` and document migration behavior.
+- Import/export tooling MUST round-trip reserved fields without silent loss or
+  normalization that changes meaning.
+
+For the `0.5.0` to `0.5.1` filesystem move, see
+[Migrating from 0.5.0 to 0.5.1](/epic-migration-0-5-1). For the `0.5.1` to
+`0.5.2` dual-purpose `SKILL.md` change, see
+[Migrating from 0.5.1 to 0.5.2](/epic-migration-0-5-2).
+
+### Compliance levels
+
+Implementations SHOULD document which of these levels they satisfy:
+
+- **Read-only loader** - discovers epics, reads authoritative files, and
+  validates reserved fields
+- **Interactive scripting** - performs resumption and user-driven updates while
+  following mutability and validation rules
+- **Autonomous scripting** - additionally supports the
+  [epic scripting specification](/epic-scripting) and enforces `policy.yml`
+  during unattended execution
+
+## Portability and round-tripping
+
+Portable epics should survive copy, export, import, and scripting host changes
+without silent rewrites.
+
+### External references
+
+- Repo-tracked files MUST NOT store host-assigned numeric IDs, database-local
+  IDs, or opaque instance handles when a stable semantic alias is available.
+- Credentials and external services SHOULD be referenced by alias or logical
+  name rather than by host-local identifier.
+- Cross-epic references SHOULD use the epic `id` or stable relative workspace
+  paths, not transient runtime identifiers.
+- If an epic intentionally depends on a non-portable local binding, that
+  dependency SHOULD be called out explicitly in `EPIC.md` or `policy.yml`.
+
+### Import/export behavior
+
+- The portable export unit is the epic directory, including `runtime/` when you
+  want to preserve the current live run.
+- Clearing `runtime/` before export produces a reusable template export.
+- Import/export tooling MUST round-trip reserved fields without silent
+  dropping, renaming, or reordering that changes meaning.
+- Importing an epic into a new workspace MUST NOT require rewriting stable
+  identifiers such as `EPIC.md.id`.
+- Epic-scoped skills, hooks, cron definitions, references, and live artifacts
+  in `runtime/artifacts/` are part of the portable unit and SHOULD move with
+  the epic.
+
+## Relationship to `SKILL.md`
+
+EPIC builds on `SKILL.md` as follows:
+
+- `SKILL.md` describes how to do work.
+- In `0.5.2`, `SKILL.md` also carries a standardized `## Agent Epics` footer
+  that points agents into the full epic operating surface.
+- `EPIC.md` and `runtime/` describe doing that work over time.
+- Standalone skills are stateless.
+- Epics add lifecycle, memory, and optional runtime behavior.
+
+<Note>
+For runtime behavior including hooks, cron jobs, and policy constraints, see
+the [epic scripting specification](/epic-scripting). For worked examples and
+patterns, see [epic examples](/epic-examples).
+</Note>

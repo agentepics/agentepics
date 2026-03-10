@@ -18,32 +18,27 @@
     "pages": [
       "home",
       {
-        "group": "Epics",
+        "group": "Start here",
         "pages": [
           "what-are-epics",
           "stateful-and-reusable",
-          "specification",
+          "epic-creation/worked-example"
+        ]
+      },
+      {
+        "group": "Create and use epics",
+        "pages": [
+          "epic-creation/getting-started",
+          "epic-usage",
+          "epic-creation/archetypes",
           {
-            "group": "Create and use epics",
+            "group": "Authoring guides",
             "pages": [
-              "epic-creation/getting-started",
-              "epic-creation/worked-example",
-              "epic-usage",
-              "epic-creation/archetypes",
-              {
-                "group": "For epic authors",
-                "pages": [
-                  "epic-creation/create-epic-skill",
-                  "epic-creation/evaluating-epics",
-                  "epic-creation/using-scripts"
-                ]
-              }
+              "epic-creation/create-epic-skill",
+              "epic-creation/using-scripts",
+              "epic-creation/evaluating-epics"
             ]
-          },
-          "epic-specification",
-          "epic-scripting",
-          "epic-examples",
-          "epic-migration-0-5-1"
+          }
         ]
       },
       {
@@ -53,10 +48,38 @@
         ]
       },
       {
-        "group": "SKILL.md compatibility",
+        "group": "Reference",
         "pages": [
-          "what-are-skills",
-          "skill-specification"
+          "specification",
+          {
+            "group": "Core EPIC reference",
+            "pages": [
+              "epic-specification",
+              "epic-core-model",
+              "epic-resumption",
+              "epic-state-files",
+              "epic-portability-and-validation"
+            ]
+          },
+          {
+            "group": "Scripting reference",
+            "pages": [
+              "epic-scripting",
+              "epic-cron",
+              "epic-hooks",
+              "epic-policy"
+            ]
+          },
+          "epic-examples",
+          "epic-migration-0-5-1",
+          "epic-migration-0-5-2",
+          {
+            "group": "SKILL.md compatibility",
+            "pages": [
+              "what-are-skills",
+              "skill-specification"
+            ]
+          }
         ]
       }
     ]

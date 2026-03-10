@@ -1,0 +1,55 @@
+---
+title: "Epic Cron Jobs"
+description: "Recurring task definitions for Agent Epics."
+---
+
+This page defines the `cron.d/` surface for recurring epic execution.
+
+**Version 0.5.2**
+
+## `cron.d/` - recurring tasks
+
+Each file in `cron.d/` defines a recurring invocation. Jobs may run a script, a
+prompt, or both.
+
+```yaml
+name: daily-metrics-check
+schedule: "0 9 * * *"
+timezone: UTC
+enabled: true
+run:
+  type: both
+  prompt: |
+    Check the product dashboard metrics for the last 24 hours.
+    Compare against targets in runtime/ROADMAP.md.
+    Log anomalies. Update structured state with latest numbers.
+  script: scripts/fetch_metrics.py
+context:
+  - runtime/ROADMAP.md
+  - runtime/state/core.json
+output:
+  log: true
+  update_state: true
+  notify: false
+```
+
+`schedule` uses a standard cron expression. `timezone` is required unless the
+epic declares a default timezone in `EPIC.md`.
+
+`run.type` MUST be one of:
+
+- `prompt`
+- `script`
+- `both`
+
+`context` lists additional files to load beyond the default disclosure flow.
+
+`output` declares whether the runtime may create logs, update structured state,
+or notify a human or external system.
+
+## Interaction with the rest of the epic
+
+- `policy.yml` still governs what the cron job may do.
+- Cron-triggered work reads and writes the same `runtime/` tree as interactive
+  or hook-driven work.
+- The `cron-fired` hook trigger MAY be used after a cron job completes.

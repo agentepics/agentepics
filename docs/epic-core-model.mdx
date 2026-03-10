@@ -1,0 +1,260 @@
+---
+title: "Epic Core Model"
+description: "Required files, precedence, mutability, and the two entrypoint documents for Agent Epics."
+---
+
+This page defines the portable core model of an epic: what files exist, which
+ones are authoritative, and how `SKILL.md` and `EPIC.md` divide responsibility.
+
+**Version 0.5.2**
+
+## Scope
+
+The EPIC standard describes durable agent workflows and capabilities that an
+AI agent or human-AI pair can resume, reuse, automate, or keep installed over
+time. Every epic is still a skill: the top of `SKILL.md` handles routing and
+activation, the standardized `## Agent Epics` footer gives a portable gateway
+into the wider epic system, and `EPIC.md` adds stateful operating context.
+
+An epic is not defined by how long it takes. It may be a one-off effort that
+needs durable state, a reusable workflow template with fresh working state each
+run, or a capability that remains installed indefinitely.
+
+## Design principles
+
+- **Backward compatible.** Every epic is a valid skill.
+- **Durable over time.** Epics support reusable workflows, autonomous
+  operation, and installed capabilities, not just tasks that happen to take
+  longer.
+- **Containerized state.** Epics keep durable working state, strategic state,
+  and runtime rules together so the agent can operate from one authoritative
+  context.
+- **Progressively disclosed.** Agents load only what they need.
+- **Mutable/immutable separation.** Agents must know which files are safe to
+  update during normal operation.
+- **Portable by default.** Repo-tracked epic files should survive copy,
+  export, import, and scripting host changes without silent rewrites.
+- **Machine-validated.** Reserved fields and machine-readable files have
+  stable structure.
+- **Minimally prescriptive.** Only `SKILL.md` and `EPIC.md` are required.
+
+## Epic archetypes
+
+**Workflow epics** define a reusable process. The workflow definition stays
+stable while each run keeps its live state under `runtime/`.
+
+**Instance epics** are one-off efforts with unique scope. The `EPIC.md` body
+may describe the specific project rather than a generic workflow.
+
+**Capability epics** extend the agent itself through a durable capability,
+integration, or tool surface. The agent works with the epic as an installed
+capability.
+
+## Conventions
+
+- All timestamps in machine-readable files MUST be ISO 8601 with timezone,
+  preferably UTC (`2026-03-03T14:22:44Z`).
+- Log filenames SHOULD use UTC.
+- `cron.d` schedules MUST declare a `timezone` field, or the epic MUST declare
+  a default in `EPIC.md` frontmatter (`timezone: UTC`).
+- Repo-tracked JSON files MUST use UTF-8, 2-space indentation, and a trailing
+  newline. Writers SHOULD preserve stable key order for reserved fields.
+- Anything required for human or agent resumption MUST live in repo-tracked
+  `runtime/`.
+- Host-private bookkeeping MAY exist, but it is outside the standardized epic
+  file surface.
+- Repo-tracked epic files SHOULD reference external systems by stable semantic
+  alias, not host-assigned or database-local IDs.
+- Write operations to `runtime/plans/`, `runtime/state.json` or
+  `runtime/state/`, and `EPIC.md` frontmatter SHOULD be serialized per epic to
+  avoid logical races between concurrent agents, hooks, and cron jobs.
+- Epics SHOULD be loosely coupled. Cross-epic coordination SHOULD happen
+  through shared artifacts or through the agent, not through direct
+  dependencies on another epic's internal structure or state.
+
+## Anatomy of an epic
+
+```text
+epic-name/
+├── SKILL.md             (required - standard skill surface plus Agent Epics footer)
+├── EPIC.md              (required - workflow definition, identity)
+│
+│   # Live instance state (mutable - written during a run)
+├── runtime/             (optional - portable live state; clearing it resets the run)
+│   ├── plans/           (optional - tactical plans, current and past)
+│   ├── state.json       (optional - structured machine-readable state)
+│   ├── state/           (optional - split structured state; reserved fields live in runtime/state/core.json)
+│   ├── log/             (optional - append-only activity history)
+│   ├── ROADMAP.md       (optional - run-level goals, milestones, outcomes)
+│   ├── DECISIONS.md     (optional - run-level curated decision records)
+│   └── artifacts/       (optional - produced outputs, deliverables)
+│
+│   # Optional extensions
+├── cron.d/              (optional - recurring task definitions; see /epic-scripting)
+├── skills/              (optional - epic-scoped skills)
+├── hooks/               (optional - event-triggered typed handlers; see /epic-scripting)
+├── policy.yml           (optional - autonomous-operation constraints; see /epic-scripting)
+├── scripts/             (inherited from SKILL.md standard)
+├── references/          (inherited from SKILL.md standard)
+└── assets/              (inherited from SKILL.md standard)
+```
+
+## What's required
+
+`SKILL.md` and `EPIC.md` MUST both exist. `SKILL.md` is the dual-purpose
+entrypoint for discovery and activation. `EPIC.md` holds the authoritative
+stateful workflow context.
+
+<Tip>
+A two-file epic is valid. The minimum useful stateful epic usually adds
+`runtime/plans/` and `runtime/log/`.
+</Tip>
+
+One epic may have several ongoing workstreams around the same operating
+context: tactical work tracked through `runtime/plans/`, recurring jobs in
+`cron.d/`, event-driven reactions in `hooks/`, and durable machine-readable
+facts in `runtime/state.json` or `runtime/state/`.
+
+## Mutability tiers
+
+| Tier | Files | Who writes | How often |
+|------|-------|-----------|-----------|
+| Working state | `runtime/plans/`, `runtime/state.json`, `runtime/log/` | Agents, humans, cron | Every session |
+| Split working state | `runtime/state/` | Agents, humans, cron | Every session when `runtime/state.json` is insufficient |
+| Strategic state | `runtime/ROADMAP.md`, `runtime/DECISIONS.md` | Humans, agents at milestones | Weekly/monthly |
+| Curated context | `EPIC.md` | Humans, lifecycle transitions | Rarely |
+| Configuration | `SKILL.md`, `cron.d/`, `hooks/`, `policy.yml` | Humans, conscious revision | At setup or revision |
+| Output | `runtime/artifacts/` | Agents | As produced |
+| Immutable | `scripts/`, `references/`, `assets/` | Skill author | During normal operation |
+
+<Warning>
+Agents MUST NOT write to Configuration or Immutable tier files during normal
+operation. Agents MUST NOT rewrite the `EPIC.md` body without human approval.
+</Warning>
+
+## Authoritative files
+
+When information overlaps or conflicts, precedence is deterministic:
+
+| Question | Authoritative source |
+|----------|---------------------|
+| What is the current status? | `runtime/state/core.json`, then `runtime/state.json` |
+| What should I do next? | `runtime/plans/` (current plan) |
+| What are the facts and numbers? | `runtime/state/core.json` or `runtime/state.json` |
+| What happened? | `runtime/log/` |
+| What are we building toward? | `runtime/ROADMAP.md` |
+| Why did we decide X? | `runtime/DECISIONS.md`, then `runtime/log/` |
+| What am I allowed to do? | `policy.yml` |
+
+If the current plan and the active state file disagree, the plan wins for
+intent and the state file wins for facts. Agents encountering a conflict SHOULD
+log the discrepancy in `runtime/log/` and resolve it.
+
+## `SKILL.md` - discovery, activation, and gateway
+
+An epic's `SKILL.md` uses the standard SKILL format. Epics do not add any new
+required EPIC-specific frontmatter fields.
+
+```yaml
+---
+name: saas-launch
+description: >
+  Workflow for launching a SaaS product. Covers architecture decisions,
+  implementation, deployment, and first-customer onboarding. Activate
+  this epic when planning or executing a product launch.
+metadata:
+  source:
+    repo: github.com/agentepics/epics
+    path: saas-launch
+    ref: main
+---
+```
+
+Published epics SHOULD include `metadata.source` as a published-source hint.
+Local-only or unpublished epics MAY omit it. If present, `metadata.source`
+MUST be either:
+
+- an absolute `http` or `https` URL string
+- a structured object with `repo`, `path`, and optional `ref`
+
+The structured form is RECOMMENDED for published epics:
+
+```yaml
+metadata:
+  source:
+    repo: github.com/agentepics/epics
+    path: saas-launch
+    ref: main
+```
+
+Hosts MAY use `metadata.source` to locate the full epic when only a standalone
+`SKILL.md` is available. Hosts MUST NOT assume that it exists, and trust policy
+still governs any fetch or install behavior.
+
+For `spec_version: 0.5.2`, the `SKILL.md` body is split into two sections:
+
+1. A short operational top section that says what the epic does, when to
+   activate it, and that durable operating context lives in `EPIC.md`.
+2. A standardized footer introduced by `## Agent Epics` and pinned to its
+   canonical source with:
+
+```html
+<!-- epics-canonical-footer: https://raw.githubusercontent.com/agentepics/agentepics/refs/heads/main/footer.md -->
+```
+
+The top section SHOULD stay short and activation-cheap. It MAY include concise
+epic-specific notes, but it MUST NOT try to duplicate `EPIC.md`'s lifecycle,
+state, or resume role. A one-line pointer near the top SHOULD direct first-time
+readers to the footer.
+
+The standardized footer MUST be identical across epics for a given spec
+revision. It identifies the directory as an Agent Epic, gives the compressed
+resumption sequence, branches on whether the host already supports epics, and
+handles the case where `SKILL.md` is seen without the full epic directory. It
+MUST be the final section of `SKILL.md`; nothing may follow it.
+
+An epic-aware loader detects an epic by checking whether `EPIC.md` exists in
+the same directory.
+
+<Note>
+The `SKILL.md` top section contains stable activation instructions for how to
+operate on the epic. If instructions change weekly, they belong in
+`runtime/plans/`, `scripts/`, `references/`, or structured state instead.
+</Note>
+
+## `EPIC.md` - stateful context
+
+`EPIC.md` MUST have YAML frontmatter with at least `id` and `spec_version`.
+
+```yaml
+---
+spec_version: 0.5.2
+id: saas-launch
+tags: [saas, launch, product]
+timezone: UTC
+---
+```
+
+`spec_version` declares which revision of the standard the epic targets.
+Readers MUST ignore unknown fields from newer versions. Writers SHOULD preserve
+unknown fields they do not understand.
+
+`id` is the epic's stable identifier. It MUST be unique within the workspace.
+
+The markdown body of `EPIC.md` defines:
+
+- the workflow's purpose, phases, inputs, and outputs
+- success or completion criteria
+- the high-level process shape
+- external interfaces
+- how to resume work on the epic
+
+For instance epics, the body may describe project-specific context instead of a
+generic workflow. Per-session state belongs in `runtime/plans/` and
+`runtime/state.json` or `runtime/state/`.
+
+<Tip>
+`EPIC.md` SHOULD include a top-level `## Resume` section and SHOULD stay under
+roughly 300 lines excluding frontmatter. If it grows past that, move volatile
+detail into `runtime/plans/`, `scripts/`, `references/`, or structured state.
+</Tip>

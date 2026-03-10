@@ -1,292 +1,97 @@
 ---
 title: "Why State And Reuse Matter"
 sidebarTitle: "Stateful + reusable"
-description: "Why Agent Epics need durable state and reusable structure, with concrete examples where plain skills fall short."
+description: "Why Agent Epics need durable state and reusable structure, with one concrete comparison to plain skills."
 ---
 
-Agent Epics are useful because they are not just instructions. They are
-durable operating surfaces and state containers for work that unfolds over
-time and often needs to be run again.
+The point of an epic is not that the work is large. The point is that the work
+needs to stay understandable and operable over time.
 
-A plain `SKILL.md` can teach an agent how to do something. An epic can keep
-track of where the work stands, what was decided, what changed, what is
-blocked, what may run autonomously, and how to pick up again next week without
-reconstructing the whole situation from scratch.
+A plain `SKILL.md` can teach an agent what to do. An epic adds the files that
+let the agent know where the work stands right now, what changed recently, and
+what it is allowed to do next.
 
-It can also hold several ongoing modes of operation around the same work: a
-current tactical plan, recurring scheduled jobs, continuous durable state, and
-event-driven reactions.
-
-That difference matters whenever the work has any of these properties:
-
-- it spans many sessions or handoffs
-- it accumulates decisions, drafts, approvals, or assets
-- it needs tactical plans and historical logs
-- it needs several ongoing workstreams around the same state
-- it benefits from recurring automation or policy boundaries
-- it should be reusable as a workflow, not reinvented each time
-
-## What A Skill Can And Cannot Do
+## What a skill can do well
 
 A skill is excellent for stable know-how:
 
 - how to write a landing page
-- how to structure a chapter outline
 - how to prepare a call sheet
+- how to clean a dataset
+- how to run a recurring process in principle
 
-But a skill falls short when the agent must also remember:
+That is enough when the work does not need durable state.
 
-- the current milestone
+## What an epic adds
+
+An epic becomes useful when the agent must also preserve:
+
 - the active plan
-- approved decisions
-- stakeholder feedback from prior sessions
-- the latest structured facts
-- what automation may run without asking
+- structured facts and status
+- decisions that should outlive chat history
+- recent history across sessions
+- optional automation and policy rules
 
-That is where an epic starts to matter.
+Those needs map directly to files:
 
-## Why Stateful Matters
+- `runtime/plans/` for tactical work
+- `runtime/state.json` or `runtime/state/` for machine-readable facts
+- `runtime/log/` for durable history
+- `runtime/DECISIONS.md` and `runtime/ROADMAP.md` for low-churn context
+- `hooks/`, `cron.d/`, and `policy.yml` for scripting behavior
 
-State turns an instruction bundle into an ongoing operating context.
+## Example: website relaunch
 
-- `runtime/plans/` tells the agent what matters now versus later.
-- `runtime/state.json` or `runtime/state/core.json` stores machine-readable facts the agent
-  should not have to infer again.
-- `runtime/DECISIONS.md` preserves why a choice was made after the discussion scrollback
-  is gone.
-- `runtime/ROADMAP.md` keeps long-horizon goals visible.
-- `runtime/log/` gives continuity across weeks, collaborators, and autonomous runs.
-- `policy.yml`, `hooks/`, and `cron.d/` let the epic keep acting under clear
-  constraints.
-
-In practice, that means one epic can carry:
-
-- a current tactical plan for what to work on next
-- recurring jobs that run every morning or every week
-- event handlers that fire when a meeting starts or a milestone changes
-- continuous machine-readable state that other runs update over time
-
-Without those files, the agent has instructions but no durable memory of the
-work itself.
-
-## Why Reusable Matters
-
-Reuse means the operating model survives while the working state changes.
-
-You should be able to keep the workflow definition, prompts, policies, and
-supporting references, then start a fresh instance with new plans, new state,
-and new logs. That is how one epic can become:
-
-- a website-delivery workflow used for each new client site
-- a book-writing system reused for each new manuscript
-- a film-production operating model reused across projects
-
-Skills are reusable as know-how. Epics are reusable as know-how plus durable
-execution structure.
-
-## Example: Website Project
-
-A skill can explain how to build a website. It cannot natively track that the
-client approved the sitemap on March 4, that copy for the pricing page is still
-blocked on legal review, or that the current sprint is focused on launch
-readiness instead of visual design.
-
-That is epic territory.
-
-```text
-client-website/
-├── SKILL.md
-├── EPIC.md
-├── runtime/
-│   ├── ROADMAP.md
-│   ├── DECISIONS.md
-│   ├── plans/
-│   │   ├── 001-discovery.md
-│   │   ├── 002-design-approval.md
-│   │   └── 003-launch-readiness.md
-│   ├── state/
-│   │   ├── core.json
-│   │   ├── pages.json
-│   │   └── approvals.json
-│   ├── log/
-│   │   ├── 2026-03-02T09-10-00Z-agent-audit-existing-site.md
-│   │   ├── 2026-03-04T14-30-00Z-human-approved-sitemap.md
-│   │   └── 2026-03-07T11-05-00Z-agent-updated-launch-checklist.md
-│   └── artifacts/
-│       ├── wireframes/
-│       ├── copy/
-│       └── exported-builds/
-├── hooks/
-│   └── milestone-complete.d/
-│       └── 020-create-next-plan.md
-├── cron.d/
-│   └── weekly-seo-check.yml
-├── policy.yml
-└── references/
-    ├── brand-guidelines.md
-    └── competitor-notes.md
-```
-
-Concrete value:
-
-- `runtime/state/pages.json` can track page status such as `draft`, `approved`, or
-  `blocked`.
-- `runtime/state/approvals.json` can record who approved homepage copy and when.
-- `runtime/plans/003-launch-readiness.md` can focus the next session immediately on
-  unresolved launch tasks.
-- `weekly-seo-check.yml` can run recurring checks without re-explaining the job
-  each time.
-- a `hooks/meeting-started.d/` handler could load the latest sitemap, open
-  issues, and approvals right as a client review begins.
-
-With a skill alone, the agent knows how to build a website. With an epic, it
-knows which website this is, what is left, what changed, and what can run
-automatically.
-
-## Example: Book Writing
-
-A skill can explain how to outline chapters, revise prose, or keep a consistent
-voice. It cannot hold the evolving manuscript state: which chapters are in
-draft, which are structurally approved, which themes have been overused, and
-which research questions are still open.
+A skill can explain how to redesign and launch a website. It cannot natively
+track that the sitemap was approved last week, the pricing page is blocked on
+legal review, and a weekly SEO check should keep running after launch.
 
 An epic can.
 
 ```text
-novel-draft/
+website-relaunch/
 ├── SKILL.md
 ├── EPIC.md
 ├── runtime/
-│   ├── ROADMAP.md
-│   ├── DECISIONS.md
 │   ├── plans/
-│   │   ├── 001-outline.md
-│   │   ├── 002-draft-act-one.md
-│   │   └── 003-revision-pass.md
+│   │   ├── 001-discovery.md
+│   │   └── 002-launch-readiness.md
 │   ├── state/
 │   │   ├── core.json
-│   │   ├── chapters.json
-│   │   ├── characters.json
-│   │   └── open-questions.json
+│   │   └── approvals.json
 │   ├── log/
-│   │   ├── 2026-04-01T08-00-00Z-agent-outlined-acts.md
-│   │   ├── 2026-04-05T19-20-00Z-human-approved-voice-direction.md
-│   │   └── 2026-04-12T07-45-00Z-agent-marked-chapter-04-blocked.md
 │   └── artifacts/
-│       ├── manuscript/
-│       ├── scene-cards/
-│       └── synopsis/
-├── references/
-│   ├── world-notes.md
-│   ├── tone-guide.md
-│   └── research.md
-└── policy.yml
-```
-
-Concrete value:
-
-- `runtime/state/chapters.json` can track each chapter as `outlined`, `drafted`, `revising`,
-  or `approved`.
-- `runtime/state/characters.json` can persist traits, arcs, and unresolved continuity issues.
-- `runtime/DECISIONS.md` can lock narrative choices such as POV, tense, and ending
-  direction.
-- `runtime/state/open-questions.json` can stop the agent from forgetting unresolved research
-  or plot issues between writing sessions.
-- a daily `cron.d/progress-check.yml` job can summarize chapter status and flag
-  stalled sections for the next writing session.
-
-With a skill alone, every session risks rediscovering the book. With an epic,
-the book has memory.
-
-## Example: Feature Film Making
-
-A skill can explain how to write a treatment, break down a script, or prepare
-production documents. It cannot coordinate the real moving parts of a film:
-script status, financing checkpoints, cast outreach, location approvals,
-department dependencies, and production milestones that unfold over months.
-
-That needs state, plans, logs, and reusable process structure.
-
-```text
-feature-film/
-├── SKILL.md
-├── EPIC.md
-├── runtime/
-│   ├── ROADMAP.md
-│   ├── DECISIONS.md
-│   ├── plans/
-│   │   ├── 001-development.md
-│   │   ├── 002-financing.md
-│   │   ├── 003-preproduction.md
-│   │   └── 004-festival-strategy.md
-│   ├── state/
-│   │   ├── core.json
-│   │   ├── script.json
-│   │   ├── budget.json
-│   │   ├── casting.json
-│   │   ├── locations.json
-│   │   └── deliverables.json
-│   ├── log/
-│   │   ├── 2026-02-10T10-00-00Z-agent-updated-budget-scenarios.md
-│   │   ├── 2026-02-14T16-20-00Z-human-approved-shooting-window.md
-│   │   └── 2026-02-19T09-15-00Z-agent-created-preproduction-plan.md
-│   └── artifacts/
-│       ├── treatments/
-│       ├── script-drafts/
-│       ├── pitch-deck/
-│       ├── schedules/
-│       └── call-sheets/
 ├── hooks/
-│   └── status-changed.d/
-│       └── 010-log-transition.md
 ├── cron.d/
-│   └── weekly-deadline-review.yml
 ├── policy.yml
 └── references/
-    ├── comps.md
-    ├── union-rules.md
-    └── location-constraints.md
 ```
 
-Concrete value:
+With a skill alone, the agent knows how to do the work.
+With an epic, the agent also knows which website this is, what is left, what
+changed, and what automation is allowed.
 
-- `runtime/state/script.json` can track draft number, locked scenes, and rewrite priorities.
-- `runtime/state/budget.json` can persist financing assumptions and approved ceilings.
-- `runtime/state/locations.json` can capture scouting status, permit risks, and fallback
-  options.
-- `weekly-deadline-review.yml` can keep the production timeline moving without
-  relying on a human to remember every checkpoint manually.
-- a `hooks/meeting-started.d/` or `hooks/status-changed.d/` flow can prepare
-  the right production brief when financing, casting, or preproduction reviews
-  begin.
+## Reuse matters too
 
-With a skill alone, the agent knows how film production works. With an epic, it
-can help run this film.
+Reuse means the operating model survives while the live state changes.
 
-## A Good Epic Still Uses Skills
+The same epic can power:
 
-This is not skills versus epics. Skills remain the portable instruction layer.
+- this quarter's website relaunch
+- the next client's website relaunch
+- the next internal site refresh
 
-The useful distinction is:
+The stable definition stays in `SKILL.md`, `EPIC.md`, `scripts/`, and
+`references/`. The per-run state lives under `runtime/`.
 
-- use a skill when the main value is stable know-how
-- use an epic when the work also needs durable state, plans, logs, policy, or
-  reusable operating structure
-- use both when the epic should expose sub-skills inside `skills/` for focused
-  tasks within the broader workflow
+## Rule of thumb
 
-## Practical Rule Of Thumb
+Use a skill for reusable instructions.
 
-If you expect the agent to ask any of these questions, you probably want an
-epic:
+Use an epic when you need reusable instructions plus durable operating state.
 
-- What is the current milestone?
-- What did we already decide?
-- What is blocked right now?
-- What changed last week?
-- What can run automatically?
-- What should happen every morning at 9?
-- What should happen when a meeting starts?
-- Can we reuse this whole operating model for the next project?
+## Next steps
 
-If the answers need to survive outside the current chat, a skill is not enough.
+- Read [What are epics?](/what-are-epics) for the short conceptual definition
+- Read [Worked example](/epic-creation/worked-example) for one end-to-end epic
+- Read [Epic usage](/epic-usage) for the live operating files

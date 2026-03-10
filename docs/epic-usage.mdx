@@ -1,31 +1,30 @@
 ---
 title: "Epic Usage"
 sidebarTitle: "Epic usage"
-description: "How an Agent Epic is used after creation: plans, structured state, logs, and the transition into recurring or event-driven operation."
+description: "How an Agent Epic turns into live plans, state, logs, and optional scripting behavior during real work."
 ---
 
-This page is about **using** an epic after it has been authored.
+This page is about what happens after an epic is authored.
 
-Creation defines the reusable operating model. Usage is where that model
-accumulates live working state inside `runtime/`: current plans,
-machine-readable facts, logs, artifacts, and eventually runtime behavior.
+Creation defines the reusable operating model. Usage is when the agent starts
+materializing live files inside `runtime/` so the work can continue across
+sessions.
 
-During usage, these operating files are typically created or updated by the
-agent as the work unfolds. This page describes what that evolution looks like.
+## The usual growth path
 
-If you have not created the reusable definition yet, start with
-[Epic creation](/epic-creation/getting-started).
+Most epics become useful in this order:
 
-## The first usage layer: plans
+1. a current plan
+2. structured state
+3. durable logs
+4. strategic files such as roadmap and decisions
+5. optional scripting behavior
 
-Most epics first become practically useful when the agent materializes a current
-plan.
+Not every epic needs all five layers.
 
-Plans are the tactical layer:
+## Layer 1: plans
 
-- what to do now
-- what comes next
-- what is blocked
+The first live file is usually the current plan.
 
 ```directory
 saas-launch/
@@ -44,51 +43,22 @@ Updated: 2026-03-06
 ## Now
 - Choose the primary database
 - Define the API schema for core resources
-- Set up the project repository structure
 
 ## Next
 - Implement authentication
 - Set up CI/CD
-- Prepare beta onboarding materials
 
 ## Blocked
 - (nothing currently blocked)
 ```
 
-Every plan file must include:
+Plans are the tactical layer: what to do now, what comes next, and what is
+blocked.
 
-- a title heading
-- an `Updated:` line
-- `## Now`
-- `## Next`
-- `## Blocked`
+## Layer 2: structured state
 
-This is the simplest way for the agent to keep the epic executable across
-sessions.
-
-## The next usage layer: structured state
-
-When the epic needs facts that should be updated as data, not rediscovered from
-prose, the agent will typically maintain `state.json` or `state/`.
-
-Good candidates:
-
-- current milestone
-- active plan filename
-- approval status
-- budget status
-- chapter status
-- release status
-
-```directory
-saas-launch/
-├── SKILL.md
-├── EPIC.md
-└── runtime/
-    ├── plans/
-    │   └── 001-initial.md
-    └── state.json
-```
+Once the epic needs facts that should be updated as data instead of rediscovered
+from prose, the agent usually adds `state.json` or `state/`.
 
 ```json
 {
@@ -100,36 +70,18 @@ saas-launch/
 }
 ```
 
-Reserved fields:
+Good candidates for structured state:
 
-| Field | Purpose |
-|-------|---------|
-| `state_version` | Schema version, default `1` if absent |
-| `status` | `active`, `paused`, `complete`, or `abandoned` |
-| `current_plan` | Filename of the active plan in `runtime/plans/` |
+- current milestone
+- active plan filename
+- approval status
+- release status
+- budget or risk flags
 
-If the state grows larger, the agent or supporting tooling may split it into a
-`runtime/state/` directory and keep reserved fields in `runtime/state/core.json`.
+## Layer 3: logs
 
-State is what makes an epic a durable container rather than just a set of
-instructions.
-
-## The continuity layer: logs
-
-When the epic needs durable history across sessions, collaborators, or
-autonomous runs, the agent appends log entries in `runtime/log/`.
-
-```directory
-saas-launch/
-├── SKILL.md
-├── EPIC.md
-└── runtime/
-    ├── plans/
-    │   └── 001-initial.md
-    ├── state.json
-    └── log/
-        └── 2026-03-06T10-00-00Z-agent-initial-setup.md
-```
+When continuity matters across sessions, collaborators, or autonomous runs, the
+agent starts appending log entries in `runtime/log/`.
 
 ```markdown
 ---
@@ -151,76 +103,42 @@ Created the first epic files and wrote the initial launch plan.
 - Start architecture decisions from the current plan
 ```
 
-Filename format:
+Logs are the durable answer to "what happened recently?"
 
-`YYYY-MM-DDTHH-MM-SSZ-{actor}-{slug}.md`
+## Layer 4: roadmap and decisions
 
-Logs are append-only. They preserve what happened, why it changed, and how the
-next session should pick up.
+As the work gets longer-lived, the epic often grows two lower-churn files:
 
-## The operating baseline
+- `runtime/ROADMAP.md` for milestones and long-range intent
+- `runtime/DECISIONS.md` for significant accepted decisions
 
-A strong operating baseline usually looks like this:
+These files keep strategic context out of the day-to-day plan and out of long
+log history.
 
-```directory
-saas-launch/
-├── SKILL.md
-├── EPIC.md
-└── runtime/
-    ├── plans/
-    │   └── 001-initial.md
-    ├── state.json
-    └── log/
-        └── 2026-03-06T10-00-00Z-agent-initial-setup.md
-```
+## Layer 5: scripting behavior
 
-That is enough for durable multi-session work.
+Some epics stop at plans, state, and logs. Others also add:
 
-## When usage turns into runtime evolution
+- `hooks/` for event-triggered behavior
+- `cron.d/` for recurring jobs
+- `policy.yml` for hard constraints
 
-Some epics remain mostly interactive. Others evolve into active operating
-surfaces.
-
-That usually happens when the epic gains one or more of:
-
-- `hooks/` for event-triggered actions
-- `cron.d/` for recurring work
-- `policy.yml` for hard autonomy constraints
-
-Examples:
-
-- prepare a briefing automatically when a meeting starts
-- run a health or readiness check every morning
-- prevent the epic from taking certain actions without escalation
-
-At that point the epic is no longer just being resumed. It is beginning to
-operate continuously or reactively around its own durable state.
+That is the point where the epic starts acting less like a saved project state
+and more like an operating system for ongoing work.
 
 ## A useful mental model
 
-Creation defines:
-
-- what this epic is
-- what phases it moves through
-- what supports each phase needs
-- what remains reusable across runs
-
-Usage evolves:
-
-- what plan is active now
-- what structured facts are true now
-- what happened recently
-- what the agent should run automatically now
-
-That live layer can be reset by clearing `runtime/`, which returns the epic to
-its reusable definition.
-
-That split keeps the docs clean and keeps the reader from confusing the epic
-definition with the epic's live working state.
+- `EPIC.md` says what this epic is for.
+- `runtime/plans/` says what matters now.
+- `runtime/state.json` says what is true right now.
+- `runtime/log/` says what happened.
+- `runtime/ROADMAP.md` and `runtime/DECISIONS.md` say where the work is headed
+  and why key choices were made.
 
 ## Next steps
 
-- [Read Epic creation](/epic-creation/getting-started) for authoring the reusable definition.
-- [Read Epic Scripting Specification](/epic-scripting) for hooks, cron, and policy.
-- [Read Epic examples](/epic-examples) for fuller layouts and patterns.
-- [Read the migration guide](/epic-migration-0-5-1) for the `0.5.0` to `0.5.1` runtime move.
+- Read [Worked example](/epic-creation/worked-example) to see the same pattern
+  in one concrete epic
+- Read [Epic State Files](/epic-state-files) for the normative file-level rules
+- Read [Epic Scripting Specification](/epic-scripting) if the epic also needs
+  hooks, cron, or policy

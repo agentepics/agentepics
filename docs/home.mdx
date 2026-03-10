@@ -5,35 +5,49 @@ description: "A simple, open format for giving agents durable workflows and capa
 
 import { LogoCarousel } from '/snippets/LogoCarousel.jsx';
 
-Agent Epics is an open format for durable agent systems. It keeps the
-portability of `SKILL.md` and adds the state, planning, policy, and lifecycle
-machinery needed for reusable workflows, autonomous operators, installed
-capabilities, and the durable state containers that hold them over time.
+Agent Epics is an open format for work that has to survive beyond the current
+chat. It keeps the portability of `SKILL.md` and adds the files an agent needs
+to keep operating over time: a durable definition, a current plan, structured
+state, logs, and optional scripting rules.
 
-[Why state and reuse matter](/stateful-and-reusable) shows where a plain skill
-falls short, with concrete website, book, and feature-film examples.
+Use an epic when the agent should be able to come back tomorrow and still know:
+what this work is, what changed, what is blocked, and what it may do next.
 
-[Worked example](/epic-creation/worked-example) shows one reusable website
-epic from authoring through the plans, state, logs, and artifacts the agent
-creates during use.
+## Choose your path
 
-## Why Epics
+<CardGroup cols={2}>
+  <Card title="Understand epics" icon="layer-group" href="/what-are-epics">
+    Start with the plain-English explanation, then compare skills and epics.
+  </Card>
+  <Card title="See one complete example" icon="sitemap" href="/epic-creation/worked-example">
+    Walk through a website relaunch epic from definition to live state.
+  </Card>
+  <Card title="Create and use epics" icon="rocket" href="/epic-creation/getting-started">
+    Author a reusable epic, then see how plans, state, and logs evolve during use.
+  </Card>
+  <Card title="Integrate or validate" icon="book" href="/specification">
+    Jump to the reference map, the core spec, and the scripting reference.
+  </Card>
+</CardGroup>
 
-Every epic is still a valid `SKILL.md` package, but Epics add the pieces that
-plain skills do not have. `SKILL.md` handles routing and instructions, while
-`EPIC.md` and the EPIC file set add durable operating context and durable
-working state. Epics enable agents to:
+## Fast mental model
 
-- **Resume work across sessions** with plans, state, and activity logs
-- **Keep durable state containers** for facts, decisions, milestones, and work
-  that must survive outside the current chat
-- **Package reusable workflows** that can be run again with fresh working state
-- **Install durable capabilities** such as memory, integrations, or monitors
-- **Run several operating loops at once** through plans, recurring jobs,
-  continuous state, and event-driven hooks
-- **Track progress** through structured state and tactical plans
-- **Make decisions** with full context from previous sessions
-- **Operate autonomously** with policy constraints, hooks, and cron jobs
+- A **skill** tells an agent how to do a kind of task.
+- An **epic** adds the files that let the agent keep doing that work over time.
+- `SKILL.md` is the discovery and activation surface.
+- `EPIC.md` is the durable operating definition.
+- `runtime/` holds the live working state for the current run.
+- `hooks/`, `cron.d/`, and `policy.yml` add optional scripting behavior.
+
+## Why epics exist
+
+Plain skills work well for stable know-how. They break down when the agent also
+needs durable memory, a current plan, decision history, or policy-constrained
+automation. Epics package those things into one portable operating surface.
+
+[Why state and reuse matter](/stateful-and-reusable) shows the difference in
+practical terms. [Epic usage](/epic-usage) shows what an agent actually creates
+while working inside an epic.
 
 ## Ecosystem foundation
 
@@ -50,85 +64,3 @@ adopted across a growing set of agent products. Agent Epics builds on that
 substrate and is maintained here by Kindship.ai.
 
 [View on GitHub](https://github.com/agentepics/agentepics)
-
-## Get started
-
-<CardGroup cols={3}>
-  <Card
-    title="What are epics?"
-    icon="layer-group"
-    href="/what-are-epics"
-  >
-    Learn how epics extend skills with durable state, autonomy, and installed capabilities.
-  </Card>
-  <Card
-    title="Epic Specification"
-    icon="file-lines"
-    href="/epic-specification"
-  >
-    The core EPIC format specification.
-  </Card>
-  <Card
-    title="Epic Scripting"
-    icon="bolt"
-    href="/epic-scripting"
-  >
-    Hooks, cron, policy, and scripting behavior.
-  </Card>
-  <Card
-    title="Worked example"
-    icon="sitemap"
-    href="/epic-creation/worked-example"
-  >
-    Follow one website epic from reusable definition to live plans, state, and logs.
-  </Card>
-  <Card
-    title="Epic Examples"
-    icon="layer-group"
-    href="/epic-examples"
-  >
-    Directory layouts, patterns, and worked examples.
-  </Card>
-  <Card
-    title="Epic creation"
-    icon="rocket"
-    href="/epic-creation/getting-started"
-  >
-    Author the reusable definition, phases, and supporting skills for a new epic.
-  </Card>
-  <Card
-    title="Epic usage"
-    icon="route"
-    href="/epic-usage"
-  >
-    See how agents materialize plans, state, logs, and ongoing operation over time.
-  </Card>
-  <Card
-    title="Epic archetypes"
-    icon="diagram-project"
-    href="/epic-creation/archetypes"
-  >
-    Choose a shape for workflow, instance, or capability epics.
-  </Card>
-  <Card
-    title="Epic reference"
-    icon="book"
-    href="/specification"
-  >
-    Start from the main EPIC reference entry point.
-  </Card>
-  <Card
-    title="Add EPIC support"
-    icon="gear"
-    href="/client-implementation/add-epics-support"
-  >
-    Implement EPIC support in a coding AI agent harness.
-  </Card>
-  <Card
-    title="Contribute"
-    icon="github"
-    href="https://github.com/agentepics/agentepics"
-  >
-    Propose spec changes, improve docs, or contribute examples.
-  </Card>
-</CardGroup>

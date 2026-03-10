@@ -1,0 +1,134 @@
+---
+title: "Epic State Files"
+description: "The files that hold plans, state, logs, decisions, roadmap, outputs, and epic-scoped skills."
+---
+
+This page describes the files that carry an epic's live and strategic state
+over time.
+
+**Version 0.5.2**
+
+## `runtime/ROADMAP.md` - strategic intent
+
+`runtime/ROADMAP.md` is the long view for the current run. It is updated
+infrequently, usually when milestones complete or strategy shifts. It contains
+goals, milestones, success criteria, and the narrative arc of the epic.
+
+When present, it is the authoritative source for long-term direction and is
+loaded at disclosure Level 5.
+
+Milestone status SHOULD use a machine-readable convention such as `[x]`, `[-]`,
+or `[ ]`.
+
+## `runtime/DECISIONS.md` - decision records
+
+`runtime/DECISIONS.md` is an optional, curated record of significant decisions.
+It is the low-churn answer to "why did we choose X?" without requiring the
+agent to scan full logs.
+
+Decision entries MUST remain stable after reaching `Accepted` status. If a
+decision is later reversed, add a new decision that supersedes the old one and
+mark the original as superseded.
+
+When present, `DECISIONS.md` is loaded at disclosure Level 5 alongside
+`ROADMAP.md`.
+
+## `runtime/plans/` - tactical plans
+
+Plans are the short view: what to do right now. They are updated frequently and
+should stay under roughly 100 lines each.
+
+The current plan is tracked by the reserved `current_plan` field in
+`runtime/state/core.json` when present, otherwise in `runtime/state.json`. When
+neither file exists or `current_plan` is absent, tooling SHOULD load the most
+recently modified plan file from `runtime/plans/`.
+
+Past plans are preserved in the directory and form a lightweight plan history.
+
+Plan files MUST contain:
+
+- a title heading
+- an `Updated:` line
+- `## Now`
+- `## Next`
+- `## Blocked`
+
+Additional sections are allowed.
+
+When `## Now` contains no actionable items and no `plan-empty` scripting hook
+is configured, agents SHOULD treat the plan as exhausted: log completion,
+inspect `runtime/ROADMAP.md`, create the next plan when needed, and otherwise
+propose marking the epic complete.
+
+## `runtime/state.json` and `runtime/state/` - structured state
+
+Structured state is the machine-readable snapshot of current facts. It
+complements human-readable plans.
+
+The schema is mostly epic-defined. Three fields are reserved for
+interoperability:
+
+- `state_version`
+- `status`
+- `current_plan`
+
+`status`, when present, MUST be one of:
+
+- `active`
+- `paused`
+- `complete`
+- `abandoned`
+
+When absent, readers SHOULD assume version `1` for `state_version` and
+`active` for `status`.
+
+Updates to structured state SHOULD be atomic. Writers MUST preserve unknown
+fields when updating reserved fields.
+
+<Note>
+When a single `runtime/state.json` becomes unwieldy, epics MAY use a
+`runtime/state/` directory instead. Tooling MUST check `runtime/state/core.json`
+first for reserved fields, then fall back to `runtime/state.json`. Reserved
+fields MUST live in `runtime/state/core.json` when that file exists.
+</Note>
+
+## `runtime/log/` - activity history
+
+`runtime/log/` is append-only history. Each entry is a markdown file with a
+timestamped, slugified filename.
+
+Log entries MUST NOT be edited once written, except to redact secrets or PII
+that were logged in error.
+
+Filename convention:
+
+`YYYY-MM-DDTHH-MM-SSZ-{actor}-{slug}.md`
+
+`actor` MAY be `agent`, `human`, `cron`, `hook`, `hook-error`, or a specific
+agent or user name.
+
+<Warning>
+Log entries MUST NOT contain secrets, tokens, API keys, or unredacted private
+user data. Agents SHOULD redact sensitive values before writing.
+</Warning>
+
+Log frontmatter is normative. At minimum it MUST identify the `actor` and
+record the `type` of entry. When runtime systems include correlation metadata
+such as `idempotency_key`, that metadata becomes part of the log frontmatter
+contract for that entry and MUST be preserved. Entries MAY also record fields
+such as `epic`, `duration_minutes`, and `tokens_used`.
+
+## `skills/` - epic-scoped skills
+
+`skills/` contains standard `SKILL.md` skills scoped to this epic. They are
+available only when the epic is active.
+
+Authors MAY create additional local folders for supporting context or generated
+materials. If work needs to become its own reusable or stateful unit, prefer a
+separate epic with loose coupling over nesting epics inside other epics.
+
+## `runtime/artifacts/` - outputs and deliverables
+
+`runtime/artifacts/` contains the things the epic produces. Keeping artifacts
+separate from logs and scripts makes the epic's outputs easy to inspect and
+portable.

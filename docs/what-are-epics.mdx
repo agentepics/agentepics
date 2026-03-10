@@ -1,141 +1,78 @@
 ---
 title: "What are epics?"
-description: "Agent Epics extend skills with durable state, enabling reusable workflows, autonomous operation, and installed capabilities."
+description: "A plain-English explanation of Agent Epics and when to use them."
 ---
 
-At its core, an epic is a skill that remembers and stays in play. It pairs a
-`SKILL.md` file (discovery, activation, and compatibility entrypoint) with an `EPIC.md` file (stateful
-workflow context), letting an agent carry forward durable state instead of
-starting from scratch each session.
+An epic is a skill with durable operating state around it.
 
-An epic is also a durable state container. It can hold current facts, open
-work, recent history, and automation rules for a project, workflow, or
-installed capability in one portable file set.
+`SKILL.md` still handles discovery and activation. `EPIC.md` and the optional
+files around it let an agent keep plans, facts, logs, outputs, and automation
+rules across sessions instead of reconstructing everything from chat history.
 
-That means an epic is not just a task that takes longer. An epic can be a
-reusable workflow, an autonomous operating loop with policy and hooks, or a
-capability the agent keeps installed indefinitely, such as memory,
-monitoring, or an integration.
+## Skill vs epic
 
-It can also support several operating modes around the same shared state:
-tactical work in `runtime/plans/`, recurring jobs in `cron.d/`, continuous
-durable state in `runtime/state.json` or `runtime/state/`, and event-triggered
-reactions in `hooks/`.
+| Use a skill when... | Use an epic when... |
+|---------------------|---------------------|
+| the agent mainly needs reusable instructions | the agent also needs durable state |
+| the work fits in one session or handoff | the work will be resumed later |
+| there is no live plan to maintain | a current plan should survive over time |
+| there is no structured project state | facts should live in files, not memory |
+| there is no ongoing automation | hooks, cron jobs, or policy may matter |
 
-If you want the concrete case for this, read
-[Why state and reuse matter](/stateful-and-reusable), which compares epics
-against plain skills with detailed website, book, and feature-film examples.
-
-If you want to see one complete epic in motion, read
-[Worked example](/epic-creation/worked-example), which walks through a reusable
-website relaunch epic from authoring to live state.
+## The basic shape
 
 ```directory
 my-epic/
-├── SKILL.md          # Required: standard skill surface plus Agent Epics footer
-├── EPIC.md           # Required: workflow definition + identity
-├── runtime/          # Optional: live, clearable state for the current run
-│   ├── plans/        # Tactical plans (what to do now)
-│   ├── state.json    # Structured machine-readable state
-│   ├── log/          # Append-only activity history
-│   ├── ROADMAP.md    # Long-term goals and milestones for this run
-│   ├── DECISIONS.md  # Curated decision records for this run
-│   └── artifacts/    # Produced outputs and deliverables
-├── hooks/            # Optional: event-triggered actions
-├── cron.d/           # Optional: recurring task definitions
-├── policy.yml        # Optional: autonomous-operation constraints
-├── skills/           # Optional: epic-scoped skills
-├── scripts/          # Inherited from skill standard
-├── references/       # Inherited from skill standard
-└── assets/           # Inherited from skill standard
+├── SKILL.md          # Discovery and activation
+├── EPIC.md           # Durable operating definition
+├── runtime/          # Live state for the current run
+│   ├── plans/
+│   ├── state.json
+│   ├── log/
+│   ├── ROADMAP.md
+│   ├── DECISIONS.md
+│   └── artifacts/
+├── hooks/            # Optional event-triggered actions
+├── cron.d/           # Optional recurring jobs
+├── policy.yml        # Optional hard constraints
+├── skills/           # Optional epic-scoped skills
+├── scripts/
+├── references/
+└── assets/
 ```
 
-Every epic is a valid skill. Skill loaders that don't understand epics will
-still discover and activate the `SKILL.md` file normally. Epic-aware loaders
-detect the `EPIC.md` file and unlock a durable operating surface for the
-agent.
+Only `SKILL.md` and `EPIC.md` are required. The rest appear as the epic starts
+carrying real work.
 
-## How epics work
+## What epics are good for
 
-Epics use **progressive disclosure** across 6 levels to manage context efficiently:
+Epics fit work with one or more of these properties:
 
-1. **Discovery**: The agent loads only the `SKILL.md` name and description, the same mechanism used for ordinary skills.
+- it spans many sessions
+- it needs a durable current plan
+- it accumulates decisions, outputs, and approvals
+- it benefits from structured state
+- it may run recurring or event-driven automation
+- the operating model should be reusable later
 
-2. **Activation**: When the task matches, the agent reads the `SKILL.md` top section, the `## Agent Epics` footer when needed for compatibility, `EPIC.md`, and `policy.yml` if present.
+## What epics are not
 
-3. **State loading**: The agent reads structured state (`runtime/state.json` or `runtime/state/core.json`) and the current plan from `runtime/plans/`.
+An epic is not just "a big task." If the agent only needs instructions and a
+few temporary files, a plain skill is usually enough. The value of an epic is
+the durable operating surface around the work.
 
-4. **Session continuity**: Recent `runtime/log/` entries (last 3-5) are loaded to understand what happened previously.
+## Common epic shapes
 
-5. **Strategic context**: `runtime/ROADMAP.md` and `runtime/DECISIONS.md` are loaded when the agent needs long-term direction or decision history.
+- **Workflow epic**: a reusable process with fresh state each run
+- **Instance epic**: one specific long-lived project
+- **Capability epic**: an installed ability such as memory, monitoring, or an integration
 
-6. **Deep reference**: Full logs, epic-scoped skills, references, and supporting files are loaded on demand.
+See [Epic archetypes](/epic-creation/archetypes) for fuller examples.
 
-This layered approach keeps agents fast while giving them access to as much
-context as they need, whether the epic is a project to resume, a workflow to
-reuse, a capability to keep installed, or a state container coordinating
-several ongoing workstreams.
+## Where to go next
 
-## The EPIC.md file
-
-`EPIC.md` contains YAML frontmatter with identity fields and a Markdown body describing the workflow:
-
-```mdx
----
-spec_version: 0.5.2
-id: saas-launch
-tags: [saas, launch, product]
-timezone: UTC
----
-
-# SaaS Launch
-
-## Purpose
-Take a product from architecture to first paying customer.
-
-## Phases
-1. Architecture decisions
-2. Core implementation
-3. Beta program
-4. First customer onboarding
-
-## Resume
-Read the current plan in runtime/plans/ and recent runtime/log/ entries to pick up where we left off.
-```
-
-The frontmatter requires `id` (a unique identifier within the workspace) and
-`spec_version` (which revision of the standard the epic targets). The body
-defines the workflow's purpose, phases, success criteria, and how to resume or
-operate it over time.
-
-## Epic archetypes
-
-Epics fall into three broad patterns:
-
-- **Workflow epics** define a reusable process. The workflow definition stays
-  stable while instance state changes each session. Example: a product launch
-  checklist that can be instantiated for each new launch.
-
-- **Instance epics** are one-off efforts with unique scope. The `EPIC.md` body
-  describes the specific project rather than a generic workflow. Example: a Q1
-  marketing campaign.
-
-- **Capability epics** extend the agent itself with a durable capability or
-  integration. The agent works with the epic as an installed feature rather
-  than something to “finish.” Example: a memory system that persists across
-  conversations.
-
-## Next steps
-
-- [Read the Epic reference](/specification) for the main EPIC surface and pointers to detailed specs.
-- [View the epic specification](/epic-specification) for core EPIC semantics.
-- [Read why state and reuse matter](/stateful-and-reusable) for concrete examples where a plain skill falls short.
-- [Read Epic creation](/epic-creation/getting-started) for authoring the reusable definition.
-- [Read the worked example](/epic-creation/worked-example) for one complete website epic from definition to live state.
-- [Read Epic usage](/epic-usage) for how agents carry plans, state, logs, and operating behavior over time.
-- [Read the scripting specification](/epic-scripting) for hooks, cron, and policy.
-- [Read the 0.5.2 migration guide](/epic-migration-0-5-2) for the dual-purpose `SKILL.md` change.
-- [Read the 0.5.1 migration guide](/epic-migration-0-5-1) for the earlier `runtime/` layout move.
-- [Browse epic examples](/epic-examples) for directory layouts and patterns.
-- [Explore epic archetypes](/epic-creation/archetypes) for concrete examples of each pattern.
-- [Read the SKILL.md reference](/skill-specification), since every epic still needs a valid `SKILL.md`.
+- Read [Why state and reuse matter](/stateful-and-reusable) for the practical
+  case against using plain skills for long-running work
+- Read [Worked example](/epic-creation/worked-example) for one complete epic
+- Read [Epic usage](/epic-usage) to see what the agent materializes during work
+- Read [Epic Reference](/specification) if you need the file-level map
