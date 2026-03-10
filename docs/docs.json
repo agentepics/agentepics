@@ -41,7 +41,7 @@
             ]
           },
           "epic-specification",
-          "epic-runtime",
+          "epic-scripting",
           "epic-examples",
           "epic-migration-0-5-1"
         ]
@@ -89,6 +89,14 @@
     {
       "source": "/skill-creation/using-scripts",
       "destination": "/epic-creation/using-scripts"
+    },
+    {
+      "source": "/epic-runtime",
+      "destination": "/epic-scripting"
+    },
+    {
+      "source": "/epic-executor",
+      "destination": "/epic-scripting"
     }
   ]
 }

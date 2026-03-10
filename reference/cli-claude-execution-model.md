@@ -12,7 +12,7 @@ split EPIC spec using:
 It is an implementation guide, not a normative spec. The normative sources are:
 
 - [Epic specification](../docs/epic-specification.mdx)
-- [Epic runtime specification](../docs/epic-runtime.mdx)
+- [Epic scripting specification](../docs/epic-scripting.mdx)
 
 Host-tool background:
 
@@ -38,10 +38,10 @@ That means:
 The Claude-integrated CLI model is best understood as:
 
 - a solid **read-only loader**
-- a practical **interactive executor**
-- a **partial runtime executor** for selected runtime-spec surfaces
+- a practical **interactive scripting host**
+- a **partial runtime scripting host** for selected runtime-spec surfaces
 
-It is not, by itself, a full autonomous executor.
+It is not, by itself, a full autonomous scripting host.
 
 ## Core obligations that still apply
 
@@ -152,8 +152,8 @@ Limitations:
 | explicit `hooks/` dispatch | Supported | `epics hooks fire` can honor runtime semantics |
 | automatic condition-triggered hooks | Partial | Depends on what the host can reliably observe |
 | `cron.d/` validation | Supported | Straightforward CLI validation |
-| `cron.d/` scheduling | Not provided | Requires external scheduler or stronger executor |
-| `runtime/` sentinels and lock files | Supported | CLI can manage non-portable executor state |
+| `cron.d/` scheduling | Not provided | Requires external scheduler or stronger scripting host |
+| `runtime/` sentinels and lock files | Supported | CLI can manage non-portable scripting state |
 | full policy enforcement on arbitrary direct edits | Partial | Host limitations remain |
 
 Important rule:
@@ -233,6 +233,6 @@ What it does not guarantee on its own:
 - unattended cron execution
 - hard enforcement over every direct file edit
 
-Those remain responsibilities of stronger executors. The important thing is to
+Those remain responsibilities of stronger scripting hosts. The important thing is to
 describe those limits as implementation limits, not as changes to the EPIC
 standard.

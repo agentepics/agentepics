@@ -9,7 +9,7 @@ autonomous operators, and installed capabilities.
 
 - [Documentation](https://agentepics.io) - Guides and tutorials
 - [Epic Specification](https://agentepics.io/epic-specification) - Core EPIC format details
-- [Epic Runtime](https://agentepics.io/epic-runtime) - Hooks, cron, policy, and executor semantics
+- [Epic Scripting](https://agentepics.io/epic-scripting) - Hooks, cron, policy, and scripting semantics
 - [Epic Examples](https://agentepics.io/epic-examples) - Layouts, patterns, and worked examples
 - [Epic Reference](https://agentepics.io/specification) - Main EPIC reference entry point
 - [SKILL.md Reference](https://agentepics.io/skill-specification) - Compatibility details for the underlying format

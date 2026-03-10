@@ -1,24 +1,24 @@
 ---
-title: "Epic Runtime Specification"
-sidebarTitle: "Runtime specification"
-description: "Runtime and executor semantics for Agent Epics: hooks, cron, policy, and the live runtime tree."
+title: "Epic Scripting Specification"
+sidebarTitle: "Scripting specification"
+description: "Scripting semantics for Agent Epics: hooks, cron, and policy."
 ---
 
 **Version 0.5.2**
 
-This page defines the runtime and executor extension surface for Agent Epics:
-`hooks/`, `cron.d/`, `policy.yml`, and the live `runtime/` tree.
+This page defines the scripting extension surface for Agent Epics:
+`hooks/`, `cron.d/`, and `policy.yml`.
 
-Read this page when you need the **normative executor behavior** for runtime
+Read this page when you need the **normative scripting behavior** for scripting
 features. If you need the portable file-format core, read
 [Epic Specification](/epic-specification). If you need the short overview map,
 read [Epic Reference](/specification).
 
-It is a description of executor behavior at runtime: what a compliant system
-will do when these files are present and how those runtime features affect epic
+It is a description of scripting behavior at runtime: what a compliant system
+will do when these files are present and how those scripting features affect epic
 operation.
 
-These runtime features are what let an epic be more than a saved task state.
+These scripting features are what let an epic be more than a saved task state.
 They support unattended operation, recurring execution, and durable installed
 capabilities that continue to act over time under policy.
 
@@ -27,20 +27,20 @@ state container: scheduled work every day, event-driven reactions such as a
 meeting starting, and longer-running maintenance or monitoring behavior.
 
 <Warning>
-If a runtime feature is present in an epic, a compliant executor must either
+If a scripting feature is present in an epic, a compliant scripting host must either
 honor it according to this specification or surface that it does not support the
-feature. It must not silently reinterpret runtime features as advisory prose.
+feature. It must not silently reinterpret scripting features as advisory prose.
 </Warning>
 
 ## Scope
 
-This runtime specification covers:
+This scripting specification covers:
 
 - recurring execution through `cron.d/`
 - event-triggered execution through `hooks/`
 - autonomous-operation constraints in `policy.yml`
-- how runtime features read from and write to the live `runtime/` tree
-- lifecycle triggers that depend on executor behavior
+- how scripting features read from and write to the live `runtime/` tree
+- lifecycle triggers that depend on scripting behavior
 
 Together these features let the epic behave less like a single queued task and
 more like a stateful operating system for ongoing work.
@@ -48,17 +48,17 @@ more like a stateful operating system for ongoing work.
 Core file precedence, reserved fields, and resumption are defined in the
 [core epic specification](/epic-specification).
 
-## Runtime compatibility rules
+## Scripting compatibility rules
 
 - `runtime/state/core.json` is authoritative over `runtime/state.json` whenever `runtime/state/` exists.
 - Agents MUST read `policy.yml` at activation time when it exists and treat it
   as hard constraints.
 - `SKILL.md` instructions MAY guide interactive work and MAY emulate the spirit
-  of a runtime reaction when no runtime feature exists, but they MUST NOT
-  replace, mask, or override configured runtime features.
-- If an executor does not support a runtime feature used by the epic, it SHOULD
+  of a scripting reaction when no scripting feature exists, but they MUST NOT
+  replace, mask, or override configured scripting features.
+- If a scripting host does not support a scripting feature used by the epic, it SHOULD
   surface that limitation explicitly rather than silently skipping it.
-- Executors MUST tolerate `runtime/` being absent or empty and MAY create it lazily.
+- Scripting hosts MUST tolerate `runtime/` being absent or empty and MAY create it lazily.
 - The spec does not standardize host-private retry, dedupe, lock, or cache storage.
 
 ## `cron.d/` — Recurring tasks
@@ -151,7 +151,7 @@ order.
 Hooks for the same trigger are synchronous and blocking. Later handlers MUST
 NOT run until the current handler finishes. Later handlers MUST NOT run after an
 `abort` result or an unrecoverable failure unless the epic's escalation policy
-explicitly instructs the executor to continue.
+explicitly instructs the scripting host to continue.
 
 The `concurrent` field is reserved for forward compatibility and SHOULD be
 ignored by `v0.5.1` implementations.
@@ -196,7 +196,7 @@ data collection.
 `http` hooks are synchronous and intended for webhooks and external
 integrations.
 
-`agent` hooks are autonomous but not fire-and-forget. The executor MUST wait
+`agent` hooks are autonomous but not fire-and-forget. The scripting host MUST wait
 for the sub-agent to complete, time out, fail, or refuse before advancing.
 
 ### Hook communication protocol
@@ -233,8 +233,8 @@ Trigger-specific fields SHOULD be included when known:
 Delivery by type:
 
 - `script` — JSON on stdin
-- `prompt` — structured executor preamble followed by markdown body
-- `agent` — structured executor preamble followed by markdown body
+- `prompt` — structured scripting preamble followed by markdown body
+- `agent` — structured scripting preamble followed by markdown body
 - `http` — JSON request body, optionally transformed by `body_template`
 
 ### Hook result protocol
@@ -259,8 +259,8 @@ Allowed `action` values:
 Type-specific result mapping:
 
 - `script` — stdout JSON plus exit codes
-- `prompt` — executor obtains a structured result from the current agent session
-- `agent` — executor obtains a structured result from the sub-agent
+- `prompt` — scripting host obtains a structured result from the current agent session
+- `agent` — scripting host obtains a structured result from the sub-agent
 - `http` — no custom action channel; HTTP success continues and failure follows
   retry and escalation rules
 
@@ -318,12 +318,12 @@ refusal, timeout, or failure.
 
 ### Hook safety and failure handling
 
-Hooks SHOULD be idempotent. Executors MAY retry or redeliver events, so hooks
+Hooks SHOULD be idempotent. Scripting hosts MAY retry or redeliver events, so hooks
 must be safe to run more than once without causing duplicate external effects.
 
 If no `policy.yml` exists, default failure handling is `log_and_continue`.
 
-When a hook fails, the executor MUST write an error log entry. The hook itself
+When a hook fails, the scripting host MUST write an error log entry. The hook itself
 is not responsible for failure logging.
 
 Recommended failure filename:
@@ -408,16 +408,3 @@ prompts already stored in the epic. Fetching remote prompts or executable code
 during autonomous execution requires explicit human approval.
 
 `http` hooks MAY call external services only when allowed by `policy.yml`.
-
-## `runtime/` — Live Instance Tree
-
-`runtime/` stores the current live run of the epic: plans, structured state,
-logs, run-level roadmap and decisions, and artifacts.
-
-It is portable and repo-tracked by default. If `runtime/` is missing, tooling
-SHOULD treat the epic as a fresh template or unstarted instance and recreate
-the needed subpaths when live state is first written.
-
-Clearing `runtime/` resets the epic back to its reusable definition while
-leaving `SKILL.md`, `EPIC.md`, `hooks/`, `cron.d/`, `policy.yml`, and other
-top-level definition files intact.

@@ -10,12 +10,12 @@ authoritative files, resumption, mutable state, and compatibility rules.
 
 Read this page when you need the **normative core format**.
 If you only need the quick map, start at [Epic Reference](/specification).
-If you need executor behavior for hooks, cron, or policy, go to
-[Epic Executor Specification](/epic-executor).
+If you need scripting behavior for hooks, cron, or policy, go to
+[Epic Scripting Specification](/epic-scripting).
 
 Companion pages:
 
-- [Epic Executor Specification](/epic-executor) — normative executor behavior for `hooks/`, `cron.d/`, and `policy.yml`
+- [Epic Scripting Specification](/epic-scripting) — normative scripting behavior for `hooks/`, `cron.d/`, and `policy.yml`
 - [Epic examples](/epic-examples) — non-normative examples, directory trees, and patterns
 
 This page defines the core EPIC surface. Runtime behavior is specified
@@ -49,7 +49,7 @@ This core document covers:
 - portability, validation, and compatibility
 
 Detailed runtime behavior for hooks, cron, policy, and live-instance behavior is
-specified in the [epic executor specification](/epic-executor).
+specified in the [epic scripting specification](/epic-scripting).
 
 ## Design Principles
 
@@ -62,7 +62,7 @@ specified in the [epic executor specification](/epic-executor).
   context.
 - **Progressively disclosed.** Agents load only what they need.
 - **Mutable/immutable separation.** Agents must know which files are safe to update during normal operation.
-- **Portable by default.** Repo-tracked epic files should survive copy, export, import, and executor changes without silent rewrites.
+- **Portable by default.** Repo-tracked epic files should survive copy, export, import, and scripting host changes without silent rewrites.
 - **Machine-validated.** Reserved fields and machine-readable files have stable structure.
 - **Minimally prescriptive.** Only `SKILL.md` and `EPIC.md` are required.
 
@@ -86,7 +86,7 @@ capability.
 - Repo-tracked JSON files MUST use UTF-8, 2-space indentation, and a trailing newline. Writers SHOULD preserve stable key order for reserved fields.
 - Anything required for human or agent resumption MUST live in repo-tracked `runtime/`.
 - Host-private bookkeeping MAY exist, but it is outside the standardized epic file surface.
-- Repo-tracked epic files SHOULD reference external systems by stable semantic alias, not executor-assigned or database-local IDs.
+- Repo-tracked epic files SHOULD reference external systems by stable semantic alias, not host-assigned or database-local IDs.
 - Write operations to `runtime/plans/`, `runtime/state.json` or `runtime/state/`, and `EPIC.md` frontmatter SHOULD be serialized per epic to avoid logical races between concurrent agents, hooks, and cron jobs.
 - Epics SHOULD be loosely coupled. Cross-epic coordination SHOULD happen through shared artifacts or through the agent, not through direct dependencies on another epic's internal structure or state.
 
@@ -108,10 +108,10 @@ epic-name/
 │   └── artifacts/       (optional — produced outputs, deliverables)
 │
 │   # Optional extensions
-├── cron.d/              (optional — recurring task definitions; see /epic-executor)
+├── cron.d/              (optional — recurring task definitions; see /epic-scripting)
 ├── skills/              (optional — epic-scoped skills)
-├── hooks/               (optional — event-triggered typed handlers; see /epic-executor)
-├── policy.yml           (optional — autonomous-operation constraints; see /epic-executor)
+├── hooks/               (optional — event-triggered typed handlers; see /epic-scripting)
+├── policy.yml           (optional — autonomous-operation constraints; see /epic-scripting)
 ├── scripts/             (inherited from SKILL.md standard)
 ├── references/          (inherited from SKILL.md standard)
 └── assets/              (inherited from SKILL.md standard)
@@ -326,10 +326,10 @@ The normative EPIC validation surface is:
 - `runtime/state/core.json` reserved fields
 - plan file required sections
 - log frontmatter
-- `cron.d/*.yml` as defined in the [epic executor specification](/epic-executor)
-- `policy.yml` as defined in the [epic executor specification](/epic-executor)
-- markdown hook frontmatter as defined in the [epic executor specification](/epic-executor)
-- HTTP hook YAML config as defined in the [epic executor specification](/epic-executor)
+- `cron.d/*.yml` as defined in the [epic scripting specification](/epic-scripting)
+- `policy.yml` as defined in the [epic scripting specification](/epic-scripting)
+- markdown hook frontmatter as defined in the [epic scripting specification](/epic-scripting)
+- HTTP hook YAML config as defined in the [epic scripting specification](/epic-scripting)
 
 ### Compatibility rules
 
@@ -345,8 +345,8 @@ For the `0.5.0` to `0.5.1` filesystem move, see [Migrating from 0.5.0 to 0.5.1](
 Implementations SHOULD document which of these levels they satisfy:
 
 - **Read-only loader** — discovers epics, reads authoritative files, and validates reserved fields
-- **Interactive executor** — performs resumption and user-driven updates while following mutability and validation rules
-- **Autonomous executor** — additionally supports the [epic executor specification](/epic-executor) and enforces `policy.yml` during unattended execution
+- **Interactive scripting** — performs resumption and user-driven updates while following mutability and validation rules
+- **Autonomous scripting** — additionally supports the [epic scripting specification](/epic-scripting) and enforces `policy.yml` during unattended execution
 
 ## `runtime/ROADMAP.md` — Strategic Intent
 
@@ -470,12 +470,12 @@ from logs and scripts makes the epic's outputs easy to inspect and portable.
 
 ## Portability and Round-Tripping
 
-Portable epics should survive copy, export, import, and executor changes
+Portable epics should survive copy, export, import, and scripting host changes
 without silent rewrites.
 
 ### External references
 
-- Repo-tracked files MUST NOT store executor-assigned numeric IDs, database-local IDs, or opaque instance handles when a stable semantic alias is available.
+- Repo-tracked files MUST NOT store host-assigned numeric IDs, database-local IDs, or opaque instance handles when a stable semantic alias is available.
 - Credentials and external services SHOULD be referenced by alias or logical name rather than by host-local identifier.
 - Cross-epic references SHOULD use the epic `id` or stable relative workspace paths, not transient runtime identifiers.
 - If an epic intentionally depends on a non-portable local binding, that dependency SHOULD be called out explicitly in `EPIC.md` or `policy.yml`.
@@ -500,6 +500,6 @@ EPIC builds on `SKILL.md` as follows:
 
 <Note>
 For runtime behavior including hooks, cron jobs, and policy constraints,
-see the [epic executor specification](/epic-executor). For
+see the [epic scripting specification](/epic-scripting). For
 worked examples and patterns, see [epic examples](/epic-examples).
 </Note>

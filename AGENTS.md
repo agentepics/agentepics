@@ -8,7 +8,7 @@ Repository guidance for agents working in this repo.
   compatibility references.
 - The canonical EPIC spec source lives in `docs/`:
   - `docs/epic-specification.mdx`
-  - `docs/epic-runtime.mdx`
+  - `docs/epic-scripting.mdx`
   - `docs/epic-examples.mdx`
 - Reference and migration artifacts live in `reference/`:
   - `reference/epic-spec-parity-checklist.md`

@@ -38,7 +38,7 @@ fi
 echo "Checking split EPIC docs..."
 for path in \
   "docs/epic-specification.mdx" \
-  "docs/epic-runtime.mdx" \
+  "docs/epic-scripting.mdx" \
   "docs/epic-examples.mdx" \
   "reference/SKILL-STANDARD.md" \
   "reference/epic-spec-parity-checklist.md"
@@ -91,7 +91,7 @@ EOF
 
 for page in \
   "epic-specification" \
-  "epic-runtime" \
+  "epic-scripting" \
   "epic-examples"
 do
   if ! awk -v page="\"$page\"" 'index($0, page) { found=1 } END { exit found ? 0 : 1 }' docs/docs.json; then
@@ -187,7 +187,7 @@ if [ -z "${EXPECTED_VERSION:-}" ]; then
 fi
 
 for path in \
-  "docs/epic-runtime.mdx" \
+  "docs/epic-scripting.mdx" \
   "docs/epic-examples.mdx"
 do
   VERSION=$(awk '

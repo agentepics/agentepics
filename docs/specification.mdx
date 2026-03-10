@@ -12,7 +12,7 @@ This page is the main reference entry point for Agent Epics.
   rule lives.
 - Read [Epic Specification](/epic-specification) when you need the normative
   portable file-format rules for `EPIC.md`, plans, state, logs, and precedence.
-- Read [Epic Executor Specification](/epic-executor) when you need executor behavior for
+- Read [Epic Scripting Specification](/epic-scripting) when you need scripting behavior for
   `hooks/`, `cron.d/`, and `policy.yml`.
 - Read [Epic Examples](/epic-examples) or the
   [Worked example](/epic-creation/worked-example) when you want concrete
@@ -21,7 +21,7 @@ This page is the main reference entry point for Agent Epics.
 If you need the full normative details, continue to:
 
 - [Epic Specification](/epic-specification) for core EPIC semantics
-- [Epic Executor Specification](/epic-executor) for hooks, cron, policy, and executor behavior
+- [Epic Scripting Specification](/epic-scripting) for hooks, cron, policy, and scripting behavior
 
 This page summarizes the model those documents define. It is the reference map,
 not the full normative text.
@@ -134,9 +134,9 @@ Filename format:
 
 Logs are append-only except for redaction.
 
-## Executor surface
+## Scripting surface
 
-Executor extensions let an epic operate beyond interactive resumption:
+Scripting extensions let an epic operate beyond interactive resumption:
 
 | Feature | Purpose |
 |---------|---------|
@@ -144,8 +144,8 @@ Executor extensions let an epic operate beyond interactive resumption:
 | `cron.d/` | Recurring execution |
 | `policy.yml` | Hard constraints on autonomous operation |
 
-These features are specified in [Epic Executor Specification](/epic-executor). A compliant
-executor must either honor them or surface that it does not support them.
+These features are specified in [Epic Scripting Specification](/epic-scripting). A compliant
+scripting host must either honor them or surface that it does not support them.
 
 ## Archetypes
 
@@ -172,7 +172,7 @@ If you need the underlying `SKILL.md` compatibility rules, read the
 ## Implementation references
 
 - [Epic Specification](/epic-specification) for normative core rules
-- [Epic Executor Specification](/epic-executor) for executor behavior
+- [Epic Scripting Specification](/epic-scripting) for scripting behavior
 - [Worked example](/epic-creation/worked-example) for one end-to-end reusable website epic
 - [Epic Usage](/epic-usage) for how agents materialize `runtime/` plans, state, logs, and runtime evolution over time
 - [Migrating from 0.5.0 to 0.5.1](/epic-migration-0-5-1) for the filesystem move to `runtime/`

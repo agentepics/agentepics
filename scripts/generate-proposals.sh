@@ -37,8 +37,8 @@ GPT_OUT="$OUTPUT_DIR/Proposals-GPT.md"
   cat "$PROMPT_FILE"
   printf '\n\n--- EPIC STANDARD ---\n'
   cat docs/epic-specification.mdx
-  printf '\n\n--- EPIC RUNTIME ---\n'
-  cat docs/epic-runtime.mdx
+  printf '\n\n--- EPIC SCRIPTING ---\n'
+  cat docs/epic-scripting.mdx
   printf '\n\n--- SKILL STANDARD ---\n'
   cat reference/SKILL-STANDARD.md
   printf '\n\n--- RESEARCH (Claude) ---\n'

@@ -25,11 +25,11 @@ Validation rule: every row must have `Status = verified`.
 | runtime/plans/ — Tactical Plans | 297-342 | `docs/epic-specification.mdx#runtimeplans--tactical-plans`, `docs/epic-examples.mdx#plan-example` | mixed | verified |
 | runtime/state.json — Structured State | 344-384 | `docs/epic-specification.mdx#runtimestatejson-and-runtimestate--structured-state`, `docs/epic-examples.mdx#runtimestatejson-example` | mixed | verified |
 | runtime/log/ — Activity History | 385-428 | `docs/epic-specification.mdx#runtimelog--activity-history`, `docs/epic-examples.mdx#runtimelog-example` | mixed | verified |
-| cron.d/ — Recurring Tasks | 430-460 | `docs/epic-runtime.mdx#crond--recurring-tasks`, `docs/epic-examples.mdx#crond-example` | normative-runtime | verified |
+| cron.d/ — Recurring Tasks | 430-460 | `docs/epic-scripting.mdx#crond--recurring-tasks`, `docs/epic-examples.mdx#crond-example` | normative-runtime | verified |
 | skills/ — Epic-Scoped Skills | 462-474 | `docs/epic-specification.mdx#skills--epic-scoped-skills` | normative-core | verified |
-| hooks/ — Event-Triggered Actions | 476-709 | `docs/epic-runtime.mdx#hooks--event-triggered-actions`, `docs/epic-examples.mdx#hooks-examples` | normative-runtime | verified |
-| policy.yml — Constraints for Autonomous Operation | 710-756 | `docs/epic-runtime.mdx#policyyml--constraints-for-autonomous-operation`, `docs/epic-examples.mdx#policyyml-example` | normative-runtime | verified |
-| runtime/ — Live Instance Tree | 758-769 | `docs/epic-runtime.mdx#runtime--live-instance-tree` | normative-runtime | verified |
+| hooks/ — Event-Triggered Actions | 476-709 | `docs/epic-scripting.mdx#hooks--event-triggered-actions`, `docs/epic-examples.mdx#hooks-examples` | normative-runtime | verified |
+| policy.yml — Constraints for Autonomous Operation | 710-756 | `docs/epic-scripting.mdx#policyyml--constraints-for-autonomous-operation`, `docs/epic-examples.mdx#policyyml-example` | normative-runtime | verified |
+| runtime/ — Live Instance Tree | 758-769 | `docs/epic-specification.mdx#anatomy-of-an-epic` | normative-core | verified |
 | runtime/artifacts/ — Outputs and Deliverables | 771-780 | `docs/epic-specification.mdx#runtimeartifacts--outputs-and-deliverables` | normative-core | verified |
 | Portability and Round-Tripping | 782-799 | `docs/epic-specification.mdx#portability-and-round-tripping` | normative-core | verified |
 | Composability Patterns | 800-838 | `docs/epic-examples.mdx#composability-patterns` | non-normative-example | verified |

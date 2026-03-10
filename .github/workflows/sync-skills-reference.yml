@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "docs/epic-specification.mdx"
-      - "docs/epic-runtime.mdx"
+      - "docs/epic-scripting.mdx"
       - "docs/epic-examples.mdx"
       - "docs/specification.mdx"
       - "reference/SKILL-STANDARD.md"
