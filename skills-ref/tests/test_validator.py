@@ -147,6 +147,39 @@ Body
     assert errors == []
 
 
+def test_valid_with_structured_metadata_source(tmp_path):
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text("""---
+name: my-skill
+description: A test skill
+metadata:
+  source:
+    repo: github.com/example/skills
+    path: my-skill
+    ref: main
+---
+Body
+""")
+    errors = validate(skill_dir)
+    assert errors == []
+
+
+def test_valid_with_url_metadata_source(tmp_path):
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text("""---
+name: my-skill
+description: A test skill
+metadata:
+  source: https://github.com/example/skills/tree/main/my-skill
+---
+Body
+""")
+    errors = validate(skill_dir)
+    assert errors == []
+
+
 def test_allowed_tools_accepted(tmp_path):
     """allowed-tools is accepted (experimental feature)."""
     skill_dir = tmp_path / "my-skill"
@@ -280,7 +313,7 @@ Body
 
 
 def test_metadata_must_be_string_map(tmp_path):
-    """metadata must be a mapping of string keys to string values."""
+    """metadata must be a mapping."""
     skill_dir = tmp_path / "my-skill"
     skill_dir.mkdir()
     (skill_dir / "SKILL.md").write_text("""---
@@ -293,6 +326,53 @@ Body
 """)
     errors = validate(skill_dir)
     assert any("metadata" in e for e in errors)
+
+
+def test_metadata_rejects_nested_non_source_value(tmp_path):
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text("""---
+name: my-skill
+description: A test skill
+metadata:
+  author:
+    nested: nope
+---
+Body
+""")
+    errors = validate(skill_dir)
+    assert any("metadata" in e for e in errors)
+
+
+def test_metadata_source_rejects_invalid_url(tmp_path):
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text("""---
+name: my-skill
+description: A test skill
+metadata:
+  source: not-a-url
+---
+Body
+""")
+    errors = validate(skill_dir)
+    assert any("metadata.source" in e for e in errors)
+
+
+def test_metadata_source_rejects_missing_path(tmp_path):
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text("""---
+name: my-skill
+description: A test skill
+metadata:
+  source:
+    repo: github.com/example/skills
+---
+Body
+""")
+    errors = validate(skill_dir)
+    assert any("metadata.source.path" in e for e in errors)
 
 
 def test_allowed_tools_must_be_string(tmp_path):

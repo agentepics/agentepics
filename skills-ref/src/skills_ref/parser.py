@@ -85,22 +85,49 @@ def _read_optional_string_field(metadata: dict, field_name: str) -> Optional[str
     return value.strip()
 
 
-def _read_optional_metadata_field(metadata: dict) -> dict[str, str]:
+def _read_optional_metadata_field(metadata: dict) -> dict:
     """Return normalized metadata or raise ValidationError."""
     if "metadata" not in metadata:
         return {}
 
     value = metadata["metadata"]
     if not isinstance(value, dict):
-        raise ValidationError(
-            "Field 'metadata' must be a mapping of string keys to string values"
-        )
+        raise ValidationError("Field 'metadata' must be a mapping")
 
     normalized = {}
     for key, item in value.items():
-        if not isinstance(key, str) or not isinstance(item, str):
+        if not isinstance(key, str):
+            raise ValidationError("Field 'metadata' must use string keys")
+        if key == "source":
+            if isinstance(item, str):
+                normalized[key] = item
+                continue
+            if isinstance(item, dict):
+                repo = item.get("repo")
+                path = item.get("path")
+                ref = item.get("ref")
+                if not isinstance(repo, str) or not repo.strip():
+                    raise ValidationError(
+                        "Field 'metadata.source.repo' must be a non-empty string"
+                    )
+                if not isinstance(path, str) or not path.strip():
+                    raise ValidationError(
+                        "Field 'metadata.source.path' must be a non-empty string"
+                    )
+                if ref is not None and (not isinstance(ref, str) or not ref.strip()):
+                    raise ValidationError(
+                        "Field 'metadata.source.ref' must be a non-empty string"
+                    )
+                normalized[key] = item
+                continue
             raise ValidationError(
-                "Field 'metadata' must be a mapping of string keys to string values"
+                "Field 'metadata.source' must be either a string URL or a mapping "
+                "with repo/path"
+            )
+        if not isinstance(item, str):
+            raise ValidationError(
+                "Field 'metadata' must map keys to strings, except for "
+                "'metadata.source'"
             )
         normalized[key] = item
 

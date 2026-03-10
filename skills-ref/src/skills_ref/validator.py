@@ -1,5 +1,7 @@
 """Skill validation logic."""
 
+from collections.abc import Mapping
+from urllib.parse import urlparse
 import unicodedata
 from pathlib import Path
 from typing import Optional
@@ -117,14 +119,57 @@ def _validate_metadata_value(metadata_value: object) -> list[str]:
     errors = []
 
     if not isinstance(metadata_value, dict):
-        return ["Field 'metadata' must be a mapping of string keys to string values"]
+        return ["Field 'metadata' must be a mapping"]
 
     for key, value in metadata_value.items():
-        if not isinstance(key, str) or not isinstance(value, str):
+        if not isinstance(key, str):
+            errors.append("Field 'metadata' must use string keys")
+            break
+        if key == "source":
+            errors.extend(_validate_metadata_source(value))
+            continue
+        if not isinstance(value, str):
             errors.append(
-                "Field 'metadata' must be a mapping of string keys to string values"
+                "Field 'metadata' must map keys to strings, except for "
+                "'metadata.source'"
             )
             break
+
+    return errors
+
+
+def _validate_metadata_source(source_value: object) -> list[str]:
+    """Validate metadata.source shared-convention shape."""
+    if isinstance(source_value, str):
+        parsed = urlparse(source_value.strip())
+        if (
+            not source_value.strip()
+            or parsed.scheme not in {"http", "https"}
+            or not parsed.netloc
+        ):
+            return [
+                "Field 'metadata.source' must be an absolute http(s) URL when "
+                "provided as a string"
+            ]
+        return []
+
+    if not isinstance(source_value, Mapping):
+        return [
+            "Field 'metadata.source' must be either a string URL or a mapping "
+            "with repo/path"
+        ]
+
+    errors = []
+    repo = source_value.get("repo")
+    path = source_value.get("path")
+    ref = source_value.get("ref")
+
+    if not isinstance(repo, str) or not repo.strip():
+        errors.append("Field 'metadata.source.repo' must be a non-empty string")
+    if not isinstance(path, str) or not path.strip():
+        errors.append("Field 'metadata.source.path' must be a non-empty string")
+    if ref is not None and (not isinstance(ref, str) or not ref.strip()):
+        errors.append("Field 'metadata.source.ref' must be a non-empty string")
 
     return errors
 

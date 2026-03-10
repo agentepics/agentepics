@@ -1,7 +1,7 @@
 """Data models for SKILL.md compatibility."""
 
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Any, Optional
 
 
 @dataclass
@@ -14,8 +14,8 @@ class SkillProperties:
         license: License for the skill (optional)
         compatibility: Compatibility information for the skill (optional)
         allowed_tools: Tool patterns the skill requires (optional, experimental)
-        metadata: Key-value pairs for client-specific properties (defaults to
-            empty dict; omitted from to_dict() output when empty)
+        metadata: Client-specific properties (defaults to empty dict; omitted
+            from to_dict() output when empty)
     """
 
     name: str
@@ -23,7 +23,7 @@ class SkillProperties:
     license: Optional[str] = None
     compatibility: Optional[str] = None
     allowed_tools: Optional[str] = None
-    metadata: dict[str, str] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         """Convert to dictionary, excluding None values."""

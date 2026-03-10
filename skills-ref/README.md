@@ -86,6 +86,10 @@ prompt = to_prompt([Path("skill-a"), Path("skill-b")])
 print(prompt)
 ```
 
+`metadata` is usually a string-valued mapping. A shared convention also allows
+`metadata.source` to be either an absolute `http`/`https` URL string or an
+object with `repo`, `path`, and optional `ref`.
+
 ## Agent Prompt Integration
 
 Use `to-prompt` to generate the suggested `<available_skills>` XML block for

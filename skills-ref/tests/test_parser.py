@@ -97,6 +97,47 @@ Body
     assert props.metadata == {"author": "Test Author", "version": "1.0"}
 
 
+def test_read_with_structured_metadata_source(tmp_path):
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text("""---
+name: my-skill
+description: A test skill
+metadata:
+  source:
+    repo: github.com/example/skills
+    path: my-skill
+    ref: main
+---
+Body
+""")
+    props = read_properties(skill_dir)
+    assert props.metadata == {
+        "source": {
+            "repo": "github.com/example/skills",
+            "path": "my-skill",
+            "ref": "main",
+        }
+    }
+
+
+def test_read_with_url_metadata_source(tmp_path):
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text("""---
+name: my-skill
+description: A test skill
+metadata:
+  source: https://github.com/example/skills/tree/main/my-skill
+---
+Body
+""")
+    props = read_properties(skill_dir)
+    assert props.metadata == {
+        "source": "https://github.com/example/skills/tree/main/my-skill"
+    }
+
+
 def test_missing_skill_md(tmp_path):
     with pytest.raises(ParseError, match="SKILL.md not found"):
         read_properties(tmp_path)
@@ -229,6 +270,23 @@ metadata:
 Body
 """)
     with pytest.raises(ValidationError, match="metadata"):
+        read_properties(skill_dir)
+
+
+def test_read_rejects_malformed_metadata_source(tmp_path):
+    skill_dir = tmp_path / "my-skill"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text("""---
+name: my-skill
+description: A test skill
+metadata:
+  source:
+    repo: github.com/example/skills
+    ref: 123
+---
+Body
+""")
+    with pytest.raises(ValidationError, match="metadata.source"):
         read_properties(skill_dir)
 
 
