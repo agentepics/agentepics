@@ -201,6 +201,7 @@ The standardized footer MUST be identical across epics for a given spec
 revision. It identifies the directory as an Agent Epic, gives the compressed
 resumption sequence, branches on whether the host already supports epics, and
 handles the case where `SKILL.md` is seen without the full epic directory.
+It MUST be the final section of `SKILL.md`; nothing may follow it.
 
 An epic-aware loader detects an epic by checking whether `EPIC.md` exists in the
 same directory.
@@ -274,8 +275,12 @@ When an agent resumes work on an epic, it SHOULD:
    Otherwise load the most recently modified plan file in `runtime/plans/`.
 7. Read the 3-5 most recent entries from `runtime/log/`.
 
+<Note>
+The `SKILL.md` footer carries a compressed resumption subset for agents that encounter an epic cold. The full 7-step sequence above is authoritative for implementers; the footer corresponds to steps 3-7 in condensed form.
+</Note>
+
 <Warning>
-Agents SHOULD NOT take action before completing steps 1-5.
+Agents SHOULD NOT take action before completing steps 1-6.
 </Warning>
 
 ## Validation and Compatibility

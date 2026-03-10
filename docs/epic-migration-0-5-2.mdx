@@ -33,7 +33,7 @@ The top section should:
 - say what the epic does
 - say when to activate it
 - say that durable operating context lives in `EPIC.md`
-- include a one-line pointer near the top such as `See ## Agent Epics below if this is your first encounter with the Agent Epics system.`
+- include a one-line pointer near the top such as `See the **Agent Epics** section below if this is your first encounter with the Agent Epics system.`
 
 The top section should not duplicate `EPIC.md`. Resume detail, lifecycle,
 state rules, and guardrails stay authoritative in `EPIC.md` and `runtime/`.
@@ -49,6 +49,10 @@ state rules, and guardrails stay authoritative in `EPIC.md` and `runtime/`.
    `runtime/` exactly as in `0.5.1`.
 6. Validate the package and refresh stale footers through tooling rather than
    by forking the footer text by hand.
+
+<Note>
+Use `footer.md` as the source text when upgrading. The footer marker embedded in `SKILL.md` uses the canonical raw URL on `refs/heads/main`; do not copy the GitHub blob URL from this migration guide into the marker.
+</Note>
 
 ### Author checklist
 

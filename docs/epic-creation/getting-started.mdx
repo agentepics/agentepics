@@ -41,6 +41,8 @@ saas-launch/
 ## Step 1: Write `SKILL.md` for activation
 
 `SKILL.md` tells an agent when this epic is relevant and why it should load it.
+In `0.5.2`, keep the top section short and activation-cheap, then append the
+canonical `## Agent Epics` footer.
 
 ```mdx
 ---
@@ -59,6 +61,12 @@ Use this epic when the work is about launching a SaaS product.
 - defining the launch phases
 - coordinating supporting work
 - keeping the operating model reusable across launches
+
+See the **Agent Epics** section below if this is your first encounter with the Agent Epics system.
+
+## Agent Epics
+<!-- epics-canonical-footer: https://raw.githubusercontent.com/agentepics/agentepics/refs/heads/main/footer.md -->
+...
 ```
 
 Write `SKILL.md` to be:
@@ -66,6 +74,7 @@ Write `SKILL.md` to be:
 - specific enough that the agent activates it at the right time
 - general enough that it still works across multiple runs or instances
 - short enough that activation stays cheap
+- clear that durable operating context lives in `EPIC.md`
 
 The `name` field must use Unicode lowercase letters, digits, and hyphens,
 match the directory name, and stay under 64 characters.
@@ -77,7 +86,7 @@ success criteria, and resumption model.
 
 ```mdx
 ---
-spec_version: 0.5.1
+spec_version: 0.5.2
 id: saas-launch
 tags: [saas, launch, product]
 timezone: UTC

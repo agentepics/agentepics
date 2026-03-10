@@ -4,7 +4,7 @@ description: "Agent Epics extend skills with durable state, enabling reusable wo
 ---
 
 At its core, an epic is a skill that remembers and stays in play. It pairs a
-`SKILL.md` file (routing and instructions) with an `EPIC.md` file (stateful
+`SKILL.md` file (discovery, activation, and compatibility entrypoint) with an `EPIC.md` file (stateful
 workflow context), letting an agent carry forward durable state instead of
 starting from scratch each session.
 
@@ -32,7 +32,7 @@ website relaunch epic from authoring to live state.
 
 ```directory
 my-epic/
-├── SKILL.md          # Required: routing + instructions (standard skill)
+├── SKILL.md          # Required: standard skill surface plus Agent Epics footer
 ├── EPIC.md           # Required: workflow definition + identity
 ├── runtime/          # Optional: live, clearable state for the current run
 │   ├── plans/        # Tactical plans (what to do now)
@@ -61,7 +61,7 @@ Epics use **progressive disclosure** across 6 levels to manage context efficient
 
 1. **Discovery**: The agent loads only the `SKILL.md` name and description, the same mechanism used for ordinary skills.
 
-2. **Activation**: When the task matches, the agent reads the full `SKILL.md` body, `EPIC.md`, and `policy.yml` if present.
+2. **Activation**: When the task matches, the agent reads the `SKILL.md` top section, the `## Agent Epics` footer when needed for compatibility, `EPIC.md`, and `policy.yml` if present.
 
 3. **State loading**: The agent reads structured state (`runtime/state.json` or `runtime/state/core.json`) and the current plan from `runtime/plans/`.
 
@@ -82,7 +82,7 @@ several ongoing workstreams.
 
 ```mdx
 ---
-spec_version: 0.5.1
+spec_version: 0.5.2
 id: saas-launch
 tags: [saas, launch, product]
 timezone: UTC
@@ -134,7 +134,8 @@ Epics fall into three broad patterns:
 - [Read the worked example](/epic-creation/worked-example) for one complete website epic from definition to live state.
 - [Read Epic usage](/epic-usage) for how agents carry plans, state, logs, and operating behavior over time.
 - [Read the runtime specification](/epic-runtime) for hooks, cron, policy, and the live runtime tree.
-- [Read the migration guide](/epic-migration-0-5-1) for the `0.5.0` to `0.5.1` layout change.
+- [Read the 0.5.2 migration guide](/epic-migration-0-5-2) for the dual-purpose `SKILL.md` change.
+- [Read the 0.5.1 migration guide](/epic-migration-0-5-1) for the earlier `runtime/` layout move.
 - [Browse epic examples](/epic-examples) for directory layouts and patterns.
 - [Explore epic archetypes](/epic-creation/archetypes) for concrete examples of each pattern.
 - [Read the SKILL.md reference](/skill-specification), since every epic still needs a valid `SKILL.md`.

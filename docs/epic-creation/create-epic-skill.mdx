@@ -79,15 +79,17 @@ before generating.
 ## The validator: `validate-epic.sh`
 
 The skill runs `validate-epic.sh` as its final check, but the validator is a
-standalone script that works on any epic — not just scaffolded ones.
+standalone script that works on scaffolded epics and other fully operational
+epics that follow the same `0.5.2` profile.
 
 ### What it checks
 
-The validator runs checks across eleven categories:
+The validator runs checks across eleven categories for the operational profile
+that `create-epic` scaffolds:
 
 1. **Name format** — lowercase letters, digits, hyphens only; no consecutive
    hyphens; 64-character limit.
-2. **Required files** — `SKILL.md` and `EPIC.md` must exist.
+2. **Required files** — `SKILL.md`, `EPIC.md`, and `runtime/state.json` must exist.
 3. **SKILL.md structure** — must have standard skill frontmatter, must mention
    `EPIC.md` as the durable context, and for `0.5.2` must include the canonical
    `## Agent Epics` footer marker.
@@ -101,8 +103,8 @@ The validator runs checks across eleven categories:
 7. **runtime/plans/** — must contain at least one `.md` file; each plan must have Now,
    Next, and Blocked sections.
 8. **runtime/log/** — directory must exist.
-9. **hooks/** — must have an `install.md` hook; each hook must have YAML
-   frontmatter with a valid `type` field and a prompt body.
+9. **hooks/** — must have an `install.md` hook; the install hook must have YAML
+   frontmatter with a valid markdown-hook `type` field.
 10. **cron.d/** — each YAML file must have `name`, `schedule`, `enabled`, and
     `run` fields; schedule must be a valid 5-field cron expression.
 11. **Cross-file consistency** — `current_plan` in `runtime/state.json` must point
@@ -121,8 +123,10 @@ indicators, followed by a summary. It exits `0` if all checks pass, `1` if any
 check fails, and `2` for usage errors.
 
 <Tip>
-The validator works on any epic directory, not just ones created by create-epic.
-Run it against your hand-authored epics to catch structural issues early.
+The validator works on any epic directory that follows the same operational
+profile, not just ones created by create-epic. For bare-minimum or partially
+authored epics, validate against the core spec instead of this stricter
+scaffold profile.
 </Tip>
 
 ### Reading the output
