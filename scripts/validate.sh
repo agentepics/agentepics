@@ -8,6 +8,7 @@ echo "Checking shell syntax..."
 bash -n scripts/generate-proposals.sh
 bash -n scripts/generate-mcp-proposals.sh
 bash -n scripts/generate-skills-proposals.sh
+bash -n scripts/validate-epic.sh
 bash -n scripts/validate.sh
 
 echo "Checking generated-output ignore rules..."
@@ -20,6 +21,18 @@ echo "Checking maintainer guidance..."
 if awk '/The version appears on line/ { found=1 } END { exit found ? 0 : 1 }' CLAUDE.md; then
   echo "ERROR: stale line-number guidance remains in CLAUDE.md" >&2
   exit 1
+fi
+
+echo "Checking canonical footer drift..."
+if [ -d "../epics.sh" ] && command -v go >/dev/null 2>&1; then
+  (
+    cd ../epics.sh
+    go test ./internal/epic -run TestCanonicalSkillFooterMatchesAgentepicsFooterWhenAvailable -count=1
+  )
+elif [ -d "../epics.sh" ]; then
+  echo "Skipping canonical footer drift check (go not installed)..."
+else
+  echo "Skipping canonical footer drift check (../epics.sh not present)..."
 fi
 
 echo "Checking split EPIC docs..."
