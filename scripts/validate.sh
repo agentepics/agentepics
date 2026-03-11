@@ -40,6 +40,13 @@ for path in \
   "docs/epic-specification.mdx" \
   "docs/epic-scripting.mdx" \
   "docs/epic-examples.mdx" \
+  "docs/epic-core-model.mdx" \
+  "docs/epic-resumption.mdx" \
+  "docs/epic-state-files.mdx" \
+  "docs/epic-portability-and-validation.mdx" \
+  "docs/epic-cron.mdx" \
+  "docs/epic-hooks.mdx" \
+  "docs/epic-policy.mdx" \
   "reference/SKILL-STANDARD.md" \
   "reference/epic-spec-parity-checklist.md"
 do
@@ -92,7 +99,14 @@ EOF
 for page in \
   "epic-specification" \
   "epic-scripting" \
-  "epic-examples"
+  "epic-examples" \
+  "epic-core-model" \
+  "epic-resumption" \
+  "epic-state-files" \
+  "epic-portability-and-validation" \
+  "epic-cron" \
+  "epic-hooks" \
+  "epic-policy"
 do
   if ! awk -v page="\"$page\"" 'index($0, page) { found=1 } END { exit found ? 0 : 1 }' docs/docs.json; then
     echo "ERROR: docs/docs.json is missing EPIC page entry: \"$page\"" >&2
@@ -188,7 +202,14 @@ fi
 
 for path in \
   "docs/epic-scripting.mdx" \
-  "docs/epic-examples.mdx"
+  "docs/epic-examples.mdx" \
+  "docs/epic-core-model.mdx" \
+  "docs/epic-resumption.mdx" \
+  "docs/epic-state-files.mdx" \
+  "docs/epic-portability-and-validation.mdx" \
+  "docs/epic-cron.mdx" \
+  "docs/epic-hooks.mdx" \
+  "docs/epic-policy.mdx"
 do
   VERSION=$(awk '
     /^\*\*Version / {
